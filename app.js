@@ -87,8 +87,6 @@ const themeMoonEl = document.querySelector("#theme-moon");
 const maskBtn = document.querySelector("#mask-btn");
 const eyeOpenEl = document.querySelector("#eye-open");
 const eyeOffEl = document.querySelector("#eye-off");
-const barModeBtn = document.querySelector("#bar-mode-btn");
-const barModeLabelEl = document.querySelector("#bar-mode-label");
 const quitBtn = document.querySelector("#quit-btn");
 const dayButtons = [...document.querySelectorAll(".day")];
 
@@ -419,9 +417,6 @@ function render() {
   const now = new Date();
   const snapshot = computeSnapshot(settings, now);
 
-  const activeBarMode = BAR_MODES.find((item) => item.key === barMode) || BAR_MODES[0];
-  barModeLabelEl.textContent = activeBarMode.label;
-
   clockEl.textContent = new Intl.DateTimeFormat("zh-CN", {
     month: "numeric",
     day: "numeric",
@@ -602,12 +597,6 @@ window.__setSystemTheme = value => {
   systemTheme = value;
   if (themeMode === "auto") render();
 };
-
-barModeBtn.addEventListener("click", () => {
-  const idx = BAR_MODES.findIndex((item) => item.key === barMode);
-  barMode = BAR_MODES[(idx + 1) % BAR_MODES.length].key;
-  persist();
-});
 
 if (quitBtn) {
   quitBtn.addEventListener("click", () => {

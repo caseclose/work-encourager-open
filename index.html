@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261022-goals" />
+    <link rel="stylesheet" href="./styles.css?v=20261022-settings-layout" />
   </head>
   <body>
     <main class="page">
@@ -56,14 +56,11 @@
               <line x1="3" y1="3" x2="21" y2="21" />
             </svg>
           </button>
-          <button type="button" class="bar-mode-btn" id="bar-mode-btn" title="切换顶部菜单栏显示格式">
-            状态栏：<span id="bar-mode-label">已挣</span>
-          </button>
           <button type="button" class="icon-btn settings-open" id="settings-open" aria-label="设置" title="设置" aria-haspopup="dialog">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M3 7h8m6 0h4M3 17h3m6 0h9"/><circle cx="14" cy="7" r="3"/><circle cx="9" cy="17" r="3"/></svg>
           </button>
-          <p class="clock" id="clock"></p>
         </div>
+        <p class="clock" id="clock"></p>
       </header>
 
       <section class="stage" id="stage" aria-labelledby="amount">
@@ -276,8 +273,9 @@
         <section class="settings-section" aria-labelledby="about-title">
           <h3 id="about-title">关于</h3>
           <div class="settings-group">
-            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.2.0 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
+            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.2.1 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
             <div class="settings-row"><div><strong>数据与隐私</strong><p>薪资、班表和目标仅保存在本机。网页与 macOS 应用分别保存设置。</p></div></div>
+            <a class="settings-row settings-navigation" href="https://github.com/caseclose" target="_blank" rel="noopener noreferrer"><div><strong>贡献者</strong><p>Feng Wang · @caseclose</p></div><span aria-hidden="true">↗</span></a>
             <a class="settings-row settings-navigation" href="https://github.com/caseclose/work-encourager-open" target="_blank" rel="noopener noreferrer"><div><strong>GitHub 项目</strong><p>查看源码、使用说明和版本发布</p></div><span aria-hidden="true">↗</span></a>
           </div>
         </section>
@@ -310,6 +308,6 @@
 
       </div>
     </dialog>
-    <script type="module" src="./app.js?v=20261022-goals"></script>
+    <script type="module" src="./app.js?v=20261022-settings-layout"></script>
   </body>
 </html>

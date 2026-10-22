@@ -63,7 +63,7 @@ final class LocalWebSchemeHandler: NSObject, WKURLSchemeHandler {
     }
 }
 
-final class PopoverWebViewController: NSViewController, WKScriptMessageHandler {
+final class PopoverWebViewController: NSViewController, WKScriptMessageHandler, WKUIDelegate {
     private(set) var webView: WKWebView!
     var onStatusUpdate: ((String, String?) -> Void)?
 
@@ -78,6 +78,7 @@ final class PopoverWebViewController: NSViewController, WKScriptMessageHandler {
         config.setURLSchemeHandler(LocalWebSchemeHandler(rootURL: webRoot), forURLScheme: "encourager")
 
         webView = WKWebView(frame: NSRect(x: 0, y: 0, width: 450, height: 760), configuration: config)
+        webView.uiDelegate = self
         webView.setValue(false, forKey: "drawsBackground")
         self.view = webView
 
@@ -86,6 +87,15 @@ final class PopoverWebViewController: NSViewController, WKScriptMessageHandler {
         if let startURL = URL(string: "encourager://app/index.html?menubar=1&systemTheme=\(themeParam)") {
             webView.load(URLRequest(url: startURL))
         }
+    }
+
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        if navigationAction.targetFrame == nil, let url = navigationAction.request.url,
+           let scheme = url.scheme, ["https", "http"].contains(scheme) {
+            NSWorkspace.shared.open(url)
+        }
+        return nil
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

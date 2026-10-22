@@ -101,11 +101,17 @@ input {
 }
 
 .top {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 6px 12px;
 }
+
+.top .brand-wrap { min-width: 0; }
+.top .brand-wrap > div { min-width: 0; }
+.top .clock { grid-column: 1 / -1; text-align: right; }
+.top-right { flex-shrink: 0; }
+.top-right .icon-btn { flex-shrink: 0; }
 
 .brand-wrap {
   display: flex;
@@ -188,28 +194,6 @@ input {
 .eye-icon[hidden],
 .theme-icon[hidden] {
   display: none;
-}
-
-.bar-mode-btn {
-  padding: 5px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--muted);
-  font-size: 0.75rem;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.bar-mode-btn span {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.bar-mode-btn:hover {
-  border-color: var(--accent);
-  color: var(--ink);
 }
 
 .clock {
@@ -864,7 +848,6 @@ input:focus-visible,
 .day:focus-visible,
 .pat:focus-visible,
 .fold-btn:focus-visible,
-.bar-mode-btn:focus-visible,
 .icon-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
