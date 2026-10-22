@@ -6,6 +6,7 @@
     "start": "python3 -m http.server 5173",
     "test": "node --test earn.test.mjs",
     "build:mac": "bash macos/build-app.sh",
-    "start:mac": "bash macos/build-app.sh && open ~/Applications/上班鼓励器.app"
+    "start:mac": "bash macos/build-app.sh && open ~/Applications/上班鼓励器.app",
+    "release:mac": "bash macos/package-release.sh"
   }
 }

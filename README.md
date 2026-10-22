@@ -3,10 +3,12 @@
   <h1>上班鼓励器 · Work Encourager</h1>
   <p><strong>把每一个工作日的每一分钟，折算成看得见的实时进账与生活小目标</strong></p>
   <p>
-    <img src="https://img.shields.io/badge/macOS-Menu_Bar_App-1d1712?style=flat-square&logo=apple&logoColor=f5c37e" alt="macOS Menu Bar App" />
+    <a href="https://github.com/caseclose/work-encourager-open/releases/latest">
+      <img src="https://img.shields.io/github/v/release/caseclose/work-encourager-open?style=flat-square&label=macOS_Release&color=f09b63" alt="Latest Release" />
+    </a>
+    <img src="https://img.shields.io/badge/macOS-Universal_(Apple_Silicon_%26_Intel)-1d1712?style=flat-square&logo=apple&logoColor=f5c37e" alt="macOS Menu Bar App" />
     <img src="https://img.shields.io/badge/Web-ES_Modules-d95a2b?style=flat-square&logo=javascript&logoColor=white" alt="Web ES Modules" />
     <img src="https://img.shields.io/badge/Privacy-100%25_Local-2e7d32?style=flat-square" alt="100% Local Privacy" />
-    <img src="https://img.shields.io/badge/Dependencies-Zero-6d5f53?style=flat-square" alt="Zero Dependencies" />
   </p>
 </div>
 
@@ -61,22 +63,28 @@
 
 ## 快速开始
 
-### 方式一：构建并运行 macOS 顶部状态栏应用（推荐）
+### 方式一：直接下载 macOS 安装包（免编译，支持 Apple Silicon & Intel）
+
+前往 [**GitHub Releases**](https://github.com/caseclose/work-encourager-open/releases/latest) 下载最新版本的安装包：
+
+- **`WorkEncourager-macOS-universal-v1.0.0.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
+- **`WorkEncourager-macOS-universal-v1.0.0.zip`**：解压后直接双击运行 `上班鼓励器.app`。
+
+> 若首次打开提示未签名开发者限制，可在终端执行一次 `xattr -cr /Applications/上班鼓励器.app` 或在「系统设置 → 隐私与安全性」中点击「仍要打开」。
+
+### 方式二：从源码编译并运行 macOS 顶部状态栏应用
 
 要求 macOS 13.0+ 且已安装 Xcode Command Line Tools（`swiftc`）：
 
 ```bash
 # 编译打包并自动安装启动 ~/Applications/上班鼓励器.app
 npm run start:mac
+
+# 生成 Universal Binary (.dmg + .zip) 发布包到 release/ 目录
+npm run release:mac
 ```
 
-若只需重新编译打包而不自动打开：
-
-```bash
-npm run build:mac
-```
-
-### 方式二：作为网页应用运行
+### 方式三：作为网页应用运行
 
 ```bash
 # 运行计薪与时间轴单元测试
