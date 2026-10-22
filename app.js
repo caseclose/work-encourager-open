@@ -208,10 +208,9 @@ function syncThemeUI() {
   const current = effectiveTheme();
   document.documentElement.dataset.theme = current;
   const isDark = current === "dark";
-  themeSunEl.style.display = isDark ? "block" : "none";
-  themeMoonEl.style.display = isDark ? "none" : "block";
-  themeSunEl.hidden = !isDark;
-  themeMoonEl.hidden = isDark;
+  // SVGElement.hidden is not a reflected property in WebKit; toggle the attribute.
+  themeSunEl.toggleAttribute("hidden", !isDark);
+  themeMoonEl.toggleAttribute("hidden", isDark);
   themeBtn.setAttribute("aria-pressed", isDark ? "true" : "false");
   themeBtn.title = isDark ? "当前深色模式，点击切换到浅色模式" : "当前浅色模式，点击切换到深色模式";
 }
@@ -219,8 +218,8 @@ function syncThemeUI() {
 function syncMaskUI() {
   maskBtn.setAttribute("aria-pressed", isMasked ? "true" : "false");
   maskBtn.title = isMasked ? "显示金额" : "隐藏金额（隐私模式）";
-  eyeOpenEl.hidden = isMasked;
-  eyeOffEl.hidden = !isMasked;
+  eyeOpenEl.toggleAttribute("hidden", isMasked);
+  eyeOffEl.toggleAttribute("hidden", !isMasked);
   form.salary.type = isMasked ? "password" : "text";
 }
 
