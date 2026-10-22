@@ -89,7 +89,7 @@ test("支持 21.75 个工作日", () => {
 });
 
 const shift = {
-  salary: "19800",
+  salary: "7500",
   workdays: "22",
   start: "10:00",
   end: "22:00",
@@ -109,8 +109,8 @@ test("默认班表会同时扣掉午休和晚饭", () => {
   assert.equal(snap.dinnerSpan, 60);
   assert.equal(snap.segments.length, 5);
   assert.equal(snap.phase, "after");
-  assert.ok(Math.abs(snap.perDay - 19800 / 22) < 1e-9);
-  assert.ok(Math.abs(snap.earned - 19800 / 22) < 1e-9);
+  assert.ok(Math.abs(snap.perDay - 7500 / 22) < 1e-9);
+  assert.ok(Math.abs(snap.earned - 7500 / 22) < 1e-9);
 });
 
 test("上午、午休和晚饭后的下一个节点都能算对", () => {
@@ -164,4 +164,80 @@ test("空月薪、倒序时间和午休越界都会拦住", () => {
     /落在上班时间/,
   );
   assert.match(computeSnapshot({ ...base, weekdays: [] }).error, /上班日/);
+});
+
+test("周末补班只覆盖当天，次日继续沿用常规班表", () => {
+  const settings = { ...base, dateOverrides: { "2026-10-24": { mode: "work" } } };
+  const saturday = computeSnapshot(settings, at(10, 30, 0, 24));
+  assert.equal(saturday.ok, true);
+  assert.equal(saturday.phase, "working");
+  assert.equal(saturday.isOverride, true);
+  assert.equal(saturday.dateKey, "2026-10-24");
+  assert.equal(saturday.workedMinutes, 60);
+  assert.equal(computeSnapshot(settings, at(10, 30, 0, 25)).phase, "off");
+  assert.equal(computeSnapshot(settings, at(10, 30, 0, 26)).isOverride, false);
+  assert.equal(base.dateOverrides, undefined);
+});
+
+test("工作日休假当天暂停收入，后续工作日恢复正常", () => {
+  const settings = { ...base, dateOverrides: { "2026-10-22": { mode: "off" } } };
+  const today = computeSnapshot(settings, at(18, 30));
+  assert.equal(today.ok, true);
+  assert.equal(today.phase, "off");
+  assert.equal(today.earned, 0);
+  assert.equal(today.effectiveSettings.overrideMode, "off");
+  assert.equal(computeSnapshot(settings, at(10, 30, 0, 23)).phase, "working");
+});
+
+test("临时提前下班同步影响倒计时、时段与当日计薪节奏", () => {
+  const settings = { ...base, dateOverrides: { "2026-10-22": { mode: "work", end: "12:00", breakEnabled: false } } };
+  const morning = computeSnapshot(settings, at(11, 0));
+  assert.equal(morning.ok, true);
+  assert.equal(morning.dayMinutes, 150);
+  assert.equal(morning.perDay, 1000);
+  assert.equal(morning.earned, 600);
+  assert.equal(morning.nextStop.kind, "end");
+  assert.equal(morning.nextStop.minutesLeft, 60);
+  assert.deepEqual(morning.segments, [{ kind: "work", start: 570, end: 720 }]);
+  const afternoon = computeSnapshot(settings, at(12, 0));
+  assert.equal(afternoon.phase, "after");
+  assert.equal(afternoon.earned, 1000);
+  assert.equal(afternoon.effectiveSettings.end, "12:00");
+  assert.equal(computeSnapshot(settings, at(12, 0, 0, 23)).dayMinutes, 450);
+});
+
+test("临时短班不能留下越界或重叠的休息时间", () => {
+  assert.match(computeSnapshot({ ...base, dateOverrides: { "2026-10-22": { mode: "work", end: "12:00" } } }, at(11, 0)).error, /2026-10-22.*午休需要落在上班时间/);
+  assert.match(computeSnapshot({ ...shift, dateOverrides: { "2026-10-22": { mode: "work", dinnerStart: "13:00", dinnerEnd: "15:00" } } }, at(11, 0)).error, /重叠/);
+});
+
+test("本月历史补班和休假参与月薪工作日折算", () => {
+  // October 2026 contains 22 regular weekdays; 15 precede October 22.
+  const regular = computeSnapshot(base, at(9, 0));
+  assert.ok(Math.abs(regular.monthWorkdays - 15) < 1e-9);
+  const added = computeSnapshot({ ...base, dateOverrides: { "2026-10-17": { mode: "work" } } }, at(9, 0));
+  assert.ok(Math.abs(added.monthWorkdays - 16 / 23 * 22) < 1e-9);
+  assert.ok(Math.abs(added.monthEarned - 16 / 23 * 22000) < 1e-9);
+  const removed = computeSnapshot({ ...base, dateOverrides: { "2026-10-21": { mode: "off" } } }, at(9, 0));
+  assert.ok(Math.abs(removed.monthWorkdays - 14 / 21 * 22) < 1e-9);
+  const exchanged = computeSnapshot({ ...base, dateOverrides: { "2026-10-17": { mode: "work" }, "2026-10-21": { mode: "off" } } }, at(9, 0));
+  assert.ok(Math.abs(exchanged.monthWorkdays - 15) < 1e-9);
+});
+
+test("跨月临时班表不会改变本月累计，短班完成后按完整工作日折算", () => {
+  const regular = computeSnapshot(base, at(9, 0));
+  const settings = { ...base, dateOverrides: { "2026-09-30": { mode: "off" }, "2026-11-01": { mode: "work" }, "2026-10-21": { mode: "work", end: "12:00", breakEnabled: false } } };
+  const changed = computeSnapshot(settings, at(9, 0));
+  assert.equal(changed.monthWorkdays, regular.monthWorkdays);
+  assert.equal(changed.monthEarned, regular.monthEarned);
+});
+
+test("整个当月都休息时累计为零且没有除零错误", () => {
+  const dateOverrides = {};
+  for (let day = 1; day <= 31; day += 1) dateOverrides[`2026-10-${String(day).padStart(2, "0")}`] = { mode: "off" };
+  const snap = computeSnapshot({ ...base, dateOverrides }, at(18, 30));
+  assert.equal(snap.ok, true);
+  assert.equal(snap.phase, "off");
+  assert.equal(snap.monthWorkdays, 0);
+  assert.equal(snap.monthEarned, 0);
 });

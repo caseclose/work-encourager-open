@@ -9,7 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261022-icons" />
+    <link rel="stylesheet" href="./styles.css?v=20261022-130" />
+    <link rel="stylesheet" href="./features.css?v=130" />
+    <link rel="stylesheet" href="./calendar.css?v=130" />
+    <link rel="stylesheet" href="./goals-ui.css?v=130" />
   </head>
   <body>
     <main class="page">
@@ -118,6 +121,7 @@
           <button type="button" class="pat" id="pat">拍拍自己</button>
         </div>
 
+        <button type="button" id="companion" class="companion" hidden><svg viewBox="0 0 96 104" aria-hidden="true"></svg><span></span></button>
         <section class="rewards-wrap" id="rewards-wrap" aria-label="今日小目标" hidden>
           <div class="rewards-head">
             <p class="rewards-title">今天点亮的小目标</p>
@@ -170,12 +174,11 @@
         <section class="settings-section" aria-labelledby="menubar-title">
           <h3 id="menubar-title">菜单栏</h3>
           <div class="settings-group">
-            <div class="settings-row settings-row-wrap"><div><strong>显示方式</strong><p>选择顶部菜单栏的金额文案</p></div>
-              <div class="settings-segments" role="group" aria-label="菜单栏显示方式">
-                <button type="button" data-pref="barMode" data-value="earned">已挣</button>
-                <button type="button" data-pref="barMode" data-value="remaining">剩余</button>
-                <button type="button" data-pref="barMode" data-value="plain">仅金额</button>
-              </div>
+            <div class="settings-row settings-row-wrap"><div><strong>显示方式</strong><p>选择金额、倒计时、进度或目标</p></div>
+              <select data-pref="barMode" aria-label="菜单栏显示方式">
+                <option value="earned">已挣金额</option><option value="remaining">剩余金额</option><option value="plain">仅金额</option>
+                <option value="countdown">下班倒计时</option><option value="progress">今日进度</option><option value="goal">目标进度</option><option value="goalTime">距目标所需工时</option><option value="adaptive">随状态自动切换</option>
+              </select>
             </div>
           </div>
         </section>
@@ -190,7 +193,7 @@
         </section>
         <section class="settings-section" aria-labelledby="goals-title">
           <h3 id="goals-title">目标</h3>
-          <div class="settings-group"><button type="button" class="settings-row settings-navigation" id="goal-settings-open"><div><strong>管理目标</strong><p>新增、修改或删除小目标和大件心愿</p></div><span aria-hidden="true">›</span></button></div>
+          <div class="settings-group"><button type="button" class="settings-row settings-navigation" id="goal-settings-open"><div><strong>管理目标</strong><p>名称、封面、Emoji、颜色、置顶和排序</p></div><span aria-hidden="true">›</span></button></div>
         </section>
         <section class="settings-section" aria-labelledby="schedule-title">
           <h3 id="schedule-title">班表</h3>
@@ -270,10 +273,11 @@
             </form>
           </details>
         </section>
+        <div id="extended-settings"></div>
         <section class="settings-section" aria-labelledby="about-title">
           <h3 id="about-title">关于</h3>
           <div class="settings-group">
-            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.2.1 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
+            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.3.0 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
             <div class="settings-row"><div><strong>数据与隐私</strong><p>薪资、班表和目标仅保存在本机。网页与 macOS 应用分别保存设置。</p></div></div>
             <a class="settings-row settings-navigation" href="https://github.com/caseclose" target="_blank" rel="noopener noreferrer"><div><strong>贡献者</strong><p>Feng Wang · @caseclose</p></div><span aria-hidden="true">↗</span></a>
             <a class="settings-row settings-navigation" href="https://github.com/caseclose/work-encourager-open" target="_blank" rel="noopener noreferrer"><div><strong>GitHub 项目</strong><p>查看源码、使用说明和版本发布</p></div><span aria-hidden="true">↗</span></a>
@@ -285,7 +289,7 @@
       <form id="goal-settings-form" novalidate>
         <div class="goal-dialog-head">
           <h3>管理我的目标</h3>
-          <p id="goal-settings-description">名称、金额和单位都可以改，保存后立即生效，仅保存在本机。</p>
+          <p id="goal-settings-description">名称、金额、Emoji、颜色和封面都可以改；置顶或拖动排序后，点击保存生效。</p>
           <div class="goal-tabs" role="group" aria-label="选择目标类型">
             <button type="button" class="goal-button" data-goal-tab="rewards" aria-pressed="true">今日小目标</button>
             <button type="button" class="goal-button" data-goal-tab="bigGoals" aria-pressed="false">跨天心愿单</button>
@@ -308,6 +312,7 @@
 
       </div>
     </dialog>
-    <script type="module" src="./app.js?v=20261022-icons"></script>
+    <div id="celebration-toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="./app.js?v=20261022-130"></script>
   </body>
 </html>

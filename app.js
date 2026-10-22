@@ -1,7 +1,28 @@
 import { computeSnapshot } from "./earn.js";
-import { loadGoals, escapeHTML } from "./goals.js";
+import { loadGoals, escapeHTML, orderedGoals } from "./goals.js";
 import { setupGoalEditor } from "./goal-editor.js";
 import { setupSettings } from "./settings.js";
+import { createGoalCelebrations } from "./celebrations.js";
+import { BAR_MODES, FEATURES_KEY, loadFeatures, validateFeatures, createReminders, barText, trackedGoal, remindersAllowed } from "./features.js";
+import { setupFeatureUI, setupCompanion, notifySafely } from "./feature-ui.js";
+let features = loadFeatures(localStorage);
+let featureUI;
+let lastGoalsRender = 0, lastRenderedGoals = null, lastGoalMask = null;
+let celebrationTimer;
+const companion = setupCompanion();
+const reminders = createReminders({ storage: localStorage, onNotify: notifySafely });
+let celebrations = createGoalCelebrations({ storage: localStorage, onCelebrate: celebrate });
+function celebrate({ goal, mode }) {
+  if (mode === 'notification') {
+    if (remindersAllowed({ ...features.reminders, enabled: true }, new Date())) notifySafely({title:'一个目标点亮了',body:'今天的努力又有了一个小小的回报。'});
+    return;
+  }
+  const toast = document.querySelector('#celebration-toast');
+  toast.textContent = isMasked ? '又点亮了一个目标，给自己一点掌声！' : `${goal.emoji || '🎯'}「${goal.label}」已点亮，给自己一点掌声！`;
+  toast.hidden = false;
+  clearTimeout(celebrationTimer);
+  celebrationTimer = setTimeout(() => { toast.hidden = true; }, 4000);
+}
 
 let goals = loadGoals(localStorage);
 
@@ -28,11 +49,7 @@ const defaults = {
   showBigGoals: true,
 };
 
-const BAR_MODES = [
-  { key: "earned", label: "已挣" },
-  { key: "remaining", label: "剩余" },
-  { key: "plain", label: "仅金额" },
-];
+
 
 const PAT_NOTES = [
   "这一分钟不是白坐的，它已经变成真金白银落进今天里。",
@@ -169,7 +186,7 @@ function fillForm(settings) {
   for (const button of dayButtons) {
     button.setAttribute("aria-pressed", settings.weekdays.includes(Number(button.dataset.day)) ? "true" : "false");
   }
-  barMode = BAR_MODES.some((item) => item.key === settings.barMode) ? settings.barMode : "earned";
+  barMode = BAR_MODES.includes(settings.barMode) ? settings.barMode : "earned";
   isMasked = Boolean(settings.masked);
   themeMode = ["light", "dark", "auto"].includes(settings.theme) ? settings.theme : "auto";
   for (const key of Object.keys(panelPreferences)) panelPreferences[key] = settings[key] !== false;
@@ -195,6 +212,7 @@ function readForm() {
     masked: isMasked,
     theme: themeMode,
     ...panelPreferences,
+    dateOverrides: features.dateOverrides,
   };
 }
 
@@ -302,9 +320,13 @@ function renderTimeline(snapshot, now) {
   cursorEl.style.left = `${Math.round(snapshot.shiftProgress * 1000) / 10}%`;
 }
 
+function goalVisual(goal) {
+  const pin = goal.pinned ? '<span class="goal-pin-mark" aria-label="置顶">置顶</span>' : '';
+  return (goal.image ? `<img class="goal-card-visual" src="${escapeHTML(goal.image)}" alt="${escapeHTML(goal.label)}封面" />` : `<span class="goal-card-emoji" aria-hidden="true">${escapeHTML(goal.emoji || '🎯')}</span>`) + pin;
+}
 function renderRewards(snapshot) {
-  const items = [...goals.rewards].sort((a, b) => a.amount - b.amount);
-  const nextItem = items.find((item) => snapshot.earned + 0.005 < item.amount);
+  const items = orderedGoals(goals.rewards);
+  const nextItem = [...items].sort((a,b) => a.amount-b.amount).find((item) => snapshot.earned + 0.005 < item.amount);
 
   if (!items.length) {
     rewardsNextEl.textContent = "还没有小目标，到「设置 → 管理目标」添加。";
@@ -331,7 +353,9 @@ function renderRewards(snapshot) {
         : isNext
           ? `差 ${isMasked ? "****" : formatMoney(item.amount - snapshot.earned)}`
           : item.unit;
+      li.style.setProperty("--goal-color", item.color);
       li.innerHTML = `
+        ${goalVisual(item)}
         <div class="reward-top">
           <span class="reward-name">${escapeHTML(item.label)}</span>
           <span class="reward-cost">${costText}</span>
@@ -354,7 +378,7 @@ function renderBigGoals(snapshot) {
   if (!goals.bigGoals.length) bigGoalsSummaryEl.textContent = "还没有心愿，到「设置 → 管理目标」添加。";
 
   bigGoalsEl.replaceChildren(
-    ...goals.bigGoals.map((goal) => {
+    ...orderedGoals(goals.bigGoals).map((goal) => {
       const totalDays = goal.amount / snapshot.perDay;
       const ratio = Math.max(0, Math.min(1, accumulated / goal.amount));
       const pct = Math.round(ratio * 1000) / 10;
@@ -371,7 +395,9 @@ function renderBigGoals(snapshot) {
 
       const li = document.createElement("li");
       li.className = "big-goal";
+      li.style.setProperty("--goal-color", goal.color);
       li.innerHTML = `
+        ${goalVisual(goal)}
         <div class="big-goal-top">
           <span class="big-goal-name">${escapeHTML(goal.label)}</span>
           <span class="big-goal-cost">${costText}</span>
@@ -415,6 +441,10 @@ function render() {
   const settings = readForm();
   const now = new Date();
   const snapshot = computeSnapshot(settings, now);
+  const schedule = snapshot.effectiveSettings || settings;
+  companion.update(features.companion, snapshot);
+  reminders.tick({snapshot,now,settings:features.reminders});
+  celebrations.tick({goals,snapshot,now,mode:features.celebrationMode});
 
   clockEl.textContent = new Intl.DateTimeFormat("zh-CN", {
     month: "numeric",
@@ -447,28 +477,28 @@ function render() {
   const left = snapshot.dayMinutes - snapshot.workedMinutes;
   const pauses = [];
   const pauseMarks = [];
-  if (settings.breakEnabled) {
+  if (schedule.breakEnabled) {
     pauses.push(`午休扣掉 ${formatDuration(snapshot.breakSpan)}`);
-    pauseMarks.push(`午休 ${settings.breakStart}–${settings.breakEnd}`);
+    pauseMarks.push(`午休 ${schedule.breakStart}–${schedule.breakEnd}`);
   }
-  if (settings.dinnerEnabled) {
+  if (schedule.dinnerEnabled) {
     pauses.push(`晚饭扣掉 ${formatDuration(snapshot.dinnerSpan)}`);
-    pauseMarks.push(`晚饭 ${settings.dinnerStart}–${settings.dinnerEnd}`);
+    pauseMarks.push(`晚饭 ${schedule.dinnerStart}–${schedule.dinnerEnd}`);
   }
   const breakText = pauses.length ? `，${pauses.join("，")}` : "";
 
   pillEl.hidden = false;
   pillEl.dataset.phase = snapshot.phase;
-  pillEl.textContent = PHASE_LABEL[snapshot.phase];
+  pillEl.textContent = PHASE_LABEL[snapshot.phase] + (snapshot.isOverride ? " · 临时班表" : "");
 
   headlineEl.textContent = headlineFor(snapshot);
   nextStopEl.hidden = false;
-  nextStopEl.textContent = nextStopText(settings, snapshot);
+  nextStopEl.textContent = nextStopText(schedule, snapshot);
 
   timelineCardEl.hidden = !settings.showTimeline;
-  scaleStartEl.textContent = `${settings.start} 上班`;
+  scaleStartEl.textContent = `${schedule.start} 上班`;
   scaleBreaksEl.textContent = pauseMarks.join(" · ");
-  scaleEndEl.textContent = `${settings.end} 下班`;
+  scaleEndEl.textContent = `${schedule.end} 下班`;
   statusEl.textContent =
     snapshot.phase === "off"
       ? "今天休息，不计工时"
@@ -477,9 +507,11 @@ function render() {
 
   renderTimeline(snapshot, now);
   rewardsWrapEl.hidden = !settings.showRewards;
-  renderRewards(snapshot);
   bigGoalsWrapEl.hidden = !settings.showBigGoals;
-  renderBigGoals(snapshot);
+  if (+now - lastGoalsRender >= 1000 || goals !== lastRenderedGoals || isMasked !== lastGoalMask) {
+    renderRewards(snapshot);renderBigGoals(snapshot);
+    lastGoalsRender=+now;lastRenderedGoals=goals;lastGoalMask=isMasked;
+  }
 
   statsEl.hidden = !settings.showStats;
   document.querySelector("#per-minute").textContent = isMasked ? "****" : formatRate(snapshot.perMinute);
@@ -494,42 +526,21 @@ function render() {
 
 function buildMenuBarStatus(snapshot) {
   const theme = effectiveTheme();
-  if (!snapshot.ok) {
-    return { title: "鼓励器", phase: "empty", masked: isMasked, theme };
+  let mini = {title:'先设置薪资与班表',detail:'打开面板开始使用',progress:0,emoji:features.companion.enabled ? (features.companion.character === 'cat' ? '🐱' : '🌱') : '¥'};
+  if (snapshot.ok) {
+    mini.progress = snapshot.progress;
+    mini.title = isMasked ? '¥****' : money.format(snapshot.earned);
+    mini.detail = nextStopText(snapshot.effectiveSettings || readForm(),snapshot);
+    if (features.miniContent === 'countdown') { mini.title = barText('countdown',snapshot,goals,isMasked);mini.detail=PHASE_LABEL[snapshot.phase]; }
+    if (features.miniContent === 'goal') {
+      const tracked = trackedGoal(goals,snapshot);
+      mini.title = tracked ? tracked.goal.label : '暂无目标';
+      mini.detail = tracked ? `${Math.min(100,Math.round(tracked.value/tracked.goal.amount*100))}% · ${tracked.value>=tracked.goal.amount?'已点亮':'继续一点点前进'}` : '到设置里添加一个目标';
+      mini.progress = tracked ? Math.min(1,tracked.value/tracked.goal.amount) : 0;
+      if(tracked && !features.companion.enabled)mini.emoji=tracked.goal.emoji;
+    }
   }
-  if (barMode === "remaining") {
-    const remaining = Math.max(0, snapshot.perDay - snapshot.earned);
-    return {
-      title: `剩余 ${isMasked ? "¥***" : money.format(remaining)}`,
-      phase: snapshot.phase,
-      masked: isMasked,
-      theme,
-    };
-  }
-  const formatted = isMasked ? "¥***" : money.format(snapshot.earned);
-  if (barMode === "plain") {
-    return {
-      title: formatted,
-      phase: snapshot.phase,
-      masked: isMasked,
-      theme,
-    };
-  }
-  const prefixMap = {
-    before: "待开工",
-    working: "已挣",
-    break: "午休",
-    dinner: "晚饭",
-    after: "今日",
-    off: "休息",
-  };
-  const prefix = prefixMap[snapshot.phase] || "已挣";
-  return {
-    title: `${prefix} ${formatted}`,
-    phase: snapshot.phase,
-    masked: isMasked,
-    theme,
-  };
+  return { title:barText(barMode,snapshot,goals,isMasked),phase:snapshot.phase || 'empty',masked:isMasked,theme,mini };
 }
 
 function postMenuBarStatus(snapshot) {
@@ -549,6 +560,9 @@ function persist() {
   syncBreakFields();
   const settings = readForm();
   save(settings);
+  featureUI?.refresh();
+  reminders.reset();
+  celebrations=createGoalCelebrations({storage:localStorage,onCelebrate:celebrate});
   render();
 }
 
@@ -630,7 +644,8 @@ const goalEditor = setupGoalEditor({
   onSave: saved => { goals = saved; render(); },
 });
 
-setupSettings({
+const settingsView = setupSettings({
+  rememberPage: () => features.rememberPage,
   goalEditor,
   getSettings: readForm,
   updateSettings: (key, value) => {
@@ -643,5 +658,23 @@ setupSettings({
 });
 
 fillForm(loadSettings());
+featureUI = setupFeatureUI({
+  getFeatures:()=>features,getSettings:readForm,getGoals:()=>goals,
+  setFeatures: next => {
+    const checked = validateFeatures(next);
+    localStorage.setItem(FEATURES_KEY,JSON.stringify(checked));
+    if(JSON.stringify(features.dateOverrides)!==JSON.stringify(checked.dateOverrides))celebrations=createGoalCelebrations({storage:localStorage,onCelebrate:celebrate});
+    features=checked;
+    if(!features.rememberPage)localStorage.removeItem('work-encourager-last-page');
+    reminders.reset();render();
+  },
+  onImport: backup => {
+    goals=backup.goals;
+    if(backup.scope==='full'){features=backup.features;fillForm(backup.settings);}
+    celebrations=createGoalCelebrations({storage:localStorage,onCelebrate:celebrate});
+    reminders.reset();render();
+  },
+});
+settingsView.restore();
 render();
 setInterval(render, 250);

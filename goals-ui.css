@@ -1,0 +1,47 @@
+/* Goal editing stays within both the menu-bar popover and a narrow browser. */
+.goal-editor-row {
+  display: block;
+  min-width: 0;
+  padding: 12px 0;
+  transition: opacity .15s, background-color .15s;
+}
+.goal-row-controls { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; min-width: 0; }
+.goal-row-number { color: var(--muted); font-size: .72rem; flex: 1; min-width: 0; }
+.goal-drag-handle, .goal-order-button {
+  flex: 0 0 27px;
+  width: 27px;
+  height: 29px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--card-strong);
+  color: var(--ink);
+  cursor: pointer;
+}
+.goal-drag-handle { cursor: grab; font-size: 1.2rem; }
+.goal-drag-handle:active { cursor: grabbing; }
+.goal-order-button:disabled { opacity: .3; cursor: default; }
+.goal-editor-row .goal-pin-control { display: flex; flex-direction: row; align-items: center; gap: 4px; white-space: nowrap; }
+.goal-editor-row .goal-pin-control input { width: 14px; height: 14px; padding: 0; margin: 0; accent-color: var(--accent); }
+.goal-row-controls .goal-remove { font-size: .7rem; padding: 6px 7px; }
+.goal-basic-fields { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, .8fr); gap: 8px; }
+.goal-editor-row.is-dragging { opacity: .45; }
+.goal-editor-row.is-drop-target { background: var(--card-strong); box-shadow: inset 0 3px var(--accent); }
+.goal-appearance { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-width: 0; }
+.goal-appearance summary { cursor: pointer; color: var(--muted); font-size: .72rem; overflow-wrap: anywhere; }
+.goal-appearance-fields { display: grid; grid-template-columns: minmax(0, 1fr) 56px; gap: 10px; align-items: end; margin-top: 10px; }
+.goal-editor-row input[type="color"] { height: 34px; padding: 3px; cursor: pointer; }
+.goal-cover-control { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.goal-cover-preview { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 1px solid var(--line); }
+.goal-cover-upload { flex: 1 1 150px; min-width: 0; }
+.goal-editor-row input[type="file"] { padding: 5px; font-size: .65rem; }
+.goal-cover-remove { padding: 6px 8px; font-size: .7rem; }
+.goal-cover-hint { margin: 8px 0 0; color: var(--muted); font-size: .65rem; line-height: 1.5; }
+@media (max-width: 380px) {
+  .goal-basic-fields { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .goal-basic-fields > label:first-child { grid-column: 1 / -1; }
+  .goal-row-controls { gap: 4px; }
+  .goal-row-number { font-size: .66rem; }
+  .goal-editor-rows { padding-left: 10px; padding-right: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .goal-editor-row { transition: none; } }
