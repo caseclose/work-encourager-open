@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="上班鼓励器（Work Encourager）——常驻 macOS 顶部状态栏的实时计薪与目标激励工具，把每个工作日的每一分钟折算成看得见的进账。"
+    />
+    <title>上班鼓励器 · Work Encourager — macOS 顶部状态栏实时计薪与目标激励工具</title>
+    <link rel="icon" href="./assets/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root,
+      :root[data-theme="light"] {
+        --bg: #f4ede1;
+        --bg-elev: rgba(255, 251, 245, 0.88);
+        --card: rgba(255, 252, 247, 0.94);
+        --soft: rgba(242, 231, 215, 0.72);
+        --ink: #221a14;
+        --muted: #76695c;
+        --line: rgba(122, 96, 70, 0.18);
+        --line-strong: rgba(122, 96, 70, 0.32);
+        --accent: #d95a2b;
+        --gold: #efb261;
+        --glow: rgba(217, 90, 43, 0.16);
+        --shadow: 0 26px 68px rgba(62, 36, 14, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+        color-scheme: light;
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #14100c;
+        --bg-elev: rgba(26, 20, 16, 0.84);
+        --card: rgba(31, 25, 20, 0.92);
+        --soft: rgba(45, 36, 29, 0.74);
+        --ink: #f7efe4;
+        --muted: #b3a493;
+        --line: rgba(247, 239, 228, 0.1);
+        --line-strong: rgba(247, 239, 228, 0.22);
+        --accent: #f09b63;
+        --gold: #f5c37e;
+        --glow: rgba(240, 155, 99, 0.2);
+        --shadow: 0 28px 72px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+        background:
+          radial-gradient(960px 460px at 18% -80px, var(--glow), transparent 68%),
+          radial-gradient(760px 420px at 85% 60px, rgba(239, 178, 97, 0.12), transparent 68%),
+          var(--bg);
+        color: var(--ink);
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: min(1100px, calc(100% - 36px));
+        margin: 0 auto;
+      }
+
+      /* Top sticky nav */
+      .nav-wrap {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        backdrop-filter: blur(18px);
+        background: var(--bg-elev);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        height: 64px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        font-family: Fraunces, "Songti SC", serif;
+        font-weight: 680;
+        font-size: 1.15rem;
+      }
+
+      .brand img {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .nav-links a:hover {
+        color: var(--ink);
+      }
+
+      .nav-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .icon-btn {
+        display: inline-grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--line-strong);
+        border-radius: 10px;
+        background: var(--card);
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .icon-btn:hover {
+        border-color: var(--accent);
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: 1px solid var(--line-strong);
+        background: var(--card);
+        color: var(--ink);
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: transform 0.14s ease, border-color 0.15s ease;
+      }
+
+      .btn:hover {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--accent), var(--gold));
+        color: #1c130d;
+        font-weight: 700;
+        box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 28%, transparent);
+      }
+
+      .btn-sm {
+        padding: 7px 14px;
+        font-size: 0.82rem;
+      }
+
+      /* Hero */
+      .hero {
+        padding: 64px 0 44px;
+        text-align: center;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 14px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+        background: color-mix(in srgb, var(--accent) 12%, var(--card));
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+
+      .hero h1 {
+        max-width: 820px;
+        margin: 20px auto 0;
+        font-family: Fraunces, "Songti SC", "Noto Serif SC", serif;
+        font-size: clamp(2.2rem, 5vw, 3.6rem);
+        font-weight: 680;
+        letter-spacing: -0.03em;
+        line-height: 1.16;
+      }
+
+      .hero-sub {
+        max-width: 680px;
+        margin: 18px auto 0;
+        color: var(--muted);
+        font-size: 1.06rem;
+      }
+
+      .hero-ctas {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      /* Simulated macOS Menu Bar showcase */
+      .menubar-demo {
+        max-width: 860px;
+        margin: 42px auto 0;
+        padding: 20px 22px 18px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .mac-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 14px;
+        border-radius: 12px;
+        background: #0e0c0a;
+        color: #f5efe6;
+        font-size: 0.82rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow-x: auto;
+      }
+
+      .mac-left,
+      .mac-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        white-space: nowrap;
+      }
+
+      .mac-left strong {
+        font-weight: 700;
+      }
+
+      .mac-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 7px;
+        background: rgba(240, 155, 99, 0.2);
+        border: 1px solid rgba(240, 155, 99, 0.55);
+        color: #f7efe4;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .mac-coin {
+        display: inline-grid;
+        place-items: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: #f5efe6;
+        color: #14100c;
+        font-size: 0.68rem;
+        font-weight: 800;
+      }
+
+      .menubar-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .mode-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .mode-tab {
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line-strong);
+        background: var(--soft);
+        color: var(--ink);
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .mode-tab[aria-selected="true"] {
+        border-color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 18%, var(--card));
+        color: var(--accent);
+      }
+
+      /* Section layout */
+      section {
+        padding: 56px 0 12px;
+      }
+
+      .section-head {
+        text-align: center;
+        max-width: 680px;
+        margin: 0 auto 32px;
+      }
+
+      .section-head h2 {
+        margin: 0;
+        font-family: Fraunces, "Songti SC", serif;
+        font-size: clamp(1.65rem, 3.4vw, 2.3rem);
+        letter-spacing: -0.02em;
+      }
+
+      .section-head p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 0.98rem;
+      }
+
+      /* 3-column screenshot showcase */
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+
+      .shot-card {
+        display: flex;
+        flex-direction: column;
+        padding: 18px;
+        border-radius: 26px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .shot-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+      }
+
+      .shot-caption {
+        margin-top: 14px;
+      }
+
+      .shot-caption h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .shot-caption p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      /* Feature bento grid */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .feat {
+        padding: 22px 22px 20px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .feat-tag {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent) 14%, transparent);
+        color: var(--accent);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .feat h3 {
+        margin: 12px 0 8px;
+        font-size: 1.08rem;
+      }
+
+      .feat p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      /* Formula & Install two-col */
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .panel {
+        padding: 26px 28px;
+        border-radius: 26px;
+        border: 1px solid var(--line);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .panel h3 {
+        margin: 0 0 12px;
+        font-family: Fraunces, "Songti SC", serif;
+        font-size: 1.3rem;
+      }
+
+      .panel p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      pre {
+        margin: 12px 0 0;
+        padding: 15px 16px;
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: var(--soft);
+        color: var(--ink);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.84rem;
+        line-height: 1.6;
+      }
+
+      .steps {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .steps li + li {
+        margin-top: 8px;
+      }
+
+      .steps strong {
+        color: var(--ink);
+      }
+
+      footer {
+        margin-top: 64px;
+        padding: 28px 0 44px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.86rem;
+        text-align: center;
+      }
+
+      @media (max-width: 860px) {
+        .gallery,
+        .features,
+        .split {
+          grid-template-columns: 1fr;
+        }
+        .nav-links {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav-wrap">
+      <div class="container nav">
+        <a class="brand" href="#">
+          <img src="./assets/icon.png" alt="上班鼓励器图标" />
+          <span>上班鼓励器</span>
+        </a>
+        <nav class="nav-links">
+          <a href="#gallery">界面预览</a>
+          <a href="#features">核心特性</a>
+          <a href="#formula">计薪逻辑</a>
+          <a href="#install">安装与构建</a>
+        </nav>
+        <div class="nav-actions">
+          <button type="button" class="icon-btn" id="theme-toggle" title="切换深色/浅色主题" aria-label="切换深色/浅色主题">
+            <span id="theme-glyph">☀</span>
+          </button>
+          <a
+            class="btn btn-primary btn-sm"
+            href="https://github.com/caseclose/work-encourager-open/releases/latest/download/WorkEncourager-macOS-universal-v1.0.0.dmg"
+          >
+            下载 macOS 版 (.dmg)
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <span class="badge">v1.0.0 · 原生 macOS 顶部状态栏应用 · Apple Silicon &amp; Intel 通用</span>
+        <h1>把漫长的工作日，拆成每一分钟看得见的进账。</h1>
+        <p class="hero-sub">
+          上班鼓励器（Work Encourager）是一款常驻 Mac 屏幕顶部菜单栏的轻量级计薪与目标激励工具。支持扣除午休与晚饭时段、12
+          宫格日常消费折算、跨天大件心愿单，以及专为办公室工位打造的三层薪资隐私保护。
+        </p>
+        <div class="hero-ctas">
+          <a
+            class="btn btn-primary"
+            href="https://github.com/caseclose/work-encourager-open/releases/latest/download/WorkEncourager-macOS-universal-v1.0.0.dmg"
+          >
+            下载 macOS 安装包 (.dmg)
+          </a>
+          <a
+            class="btn"
+            href="https://github.com/caseclose/work-encourager-open/releases/latest/download/WorkEncourager-macOS-universal-v1.0.0.zip"
+          >
+            下载压缩包 (.zip)
+          </a>
+          <a class="btn" href="https://github.com/caseclose/work-encourager-open" target="_blank" rel="noopener noreferrer">
+            GitHub 开源仓库
+          </a>
+        </div>
+
+        <div class="menubar-demo" aria-label="macOS 顶部状态栏效果演示">
+          <div class="mac-topbar">
+            <div class="mac-left">
+              <span></span>
+              <strong>Cursor</strong>
+              <span>File</span>
+              <span>Edit</span>
+              <span>View</span>
+              <span>Window</span>
+            </div>
+            <div class="mac-right">
+              <span class="mac-status-pill" id="demo-status-pill">
+                <span class="mac-coin">¥</span>
+                <span id="demo-status-text">已挣 ¥520.60</span>
+              </span>
+              <span>Wi-Fi</span>
+              <span>100%</span>
+              <span>10月22日 周四 15:20</span>
+            </div>
+          </div>
+          <div class="menubar-controls">
+            <span>模拟 Mac 屏幕右上角顶部状态栏显示效果（等宽数字秒级跳动，宽度不抖动）：</span>
+            <div class="mode-tabs" role="tablist">
+              <button type="button" class="mode-tab" data-text="已挣 ¥520.60" aria-selected="true">已挣模式</button>
+              <button type="button" class="mode-tab" data-text="剩余 ¥379.40" aria-selected="false">剩余模式</button>
+              <button type="button" class="mode-tab" data-text="¥520.60" aria-selected="false">仅金额</button>
+              <button type="button" class="mode-tab" data-text="已挣 ¥***" aria-selected="false">小眼睛隐私打码</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="gallery">
+        <div class="section-head">
+          <h2>实机渲染预览</h2>
+          <p>支持深色模式、浅色模式与一键全局隐私打码，点击菜单栏图标即可呼出完整面板。</p>
+        </div>
+        <div class="gallery">
+          <article class="shot-card">
+            <img src="./assets/preview-dark.png" alt="深色模式实机截图" loading="lazy" />
+            <div class="shot-caption">
+              <h3>深色模式（Dark Mode）</h3>
+              <p>深咖底色搭配暖金渐变进度条，与 macOS 暗色菜单栏毛玻璃（DarkAqua）浑然一体。</p>
+            </div>
+          </article>
+          <article class="shot-card">
+            <img src="./assets/preview-light.png" alt="浅色模式实机截图" loading="lazy" />
+            <div class="shot-caption">
+              <h3>浅色模式（Light Mode）</h3>
+              <p>温润羊皮纸米色调，高对比度衬线大数字，适合日间明亮办公环境。</p>
+            </div>
+          </article>
+          <article class="shot-card">
+            <img src="./assets/preview-masked.png" alt="隐私打码模式实机截图" loading="lazy" />
+            <div class="shot-caption">
+              <h3>小眼睛隐私打码（Privacy Mask）</h3>
+              <p>一键把顶部菜单栏与面板内所有敏感金额变成 ¥*** / ****，保留今日进度百分比与倒计时。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="section-head">
+          <h2>为打工人设计的细节</h2>
+          <p>零第三方依赖、安装包仅 1 MB，兼顾情绪价值与工位隐私。</p>
+        </div>
+        <div class="features">
+          <div class="feat">
+            <span class="feat-tag">macOS Native</span>
+            <h3>常驻顶部状态栏</h3>
+            <p>基于 Swift + AppKit + WebKit 原生构建，不占程序坞（Dock）位置，后台每秒刷新状态栏标题。</p>
+          </div>
+          <div class="feat">
+            <span class="feat-tag">Timeline</span>
+            <h3>扣除午休与晚饭时段</h3>
+            <p>支持分别配置午休与晚饭起止时间。休息期间金额自动停表，全天分段时间轴一目了然。</p>
+          </div>
+          <div class="feat">
+            <span class="feat-tag">12 Milestones</span>
+            <h3>12 宫格日常消费折算</h3>
+            <p>把抽象工时折算成工作餐、通勤打车、韩式炸鸡、披萨、有线耳机、自助烤肉、智能手环、Steam 3A 大作与骨传导耳机。</p>
+          </div>
+          <div class="feat">
+            <span class="feat-tag">Big Wishlist</span>
+            <h3>跨天大件心愿单</h3>
+            <p>结合本月已累算工作日与今日实时进账，动态折算 iPhone、MacBook Air 等大件共需几天、还差几天。</p>
+          </div>
+          <div class="feat">
+            <span class="feat-tag">3-Layer Privacy</span>
+            <h3>三层工位隐私保护</h3>
+            <p>班表默认折叠隐藏薪资 + 右上角小眼睛一键全局打码 + 100% 纯本机存储，绝不上传任何数据。</p>
+          </div>
+          <div class="feat">
+            <span class="feat-tag">Micro Cheer</span>
+            <h3>「拍拍自己」即时打气</h3>
+            <p>自动提示距离午休、晚饭或下班还有多久；点一下「拍拍自己」切换暖心文案并浮现每分钟进账反馈。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="formula">
+        <div class="split">
+          <div class="panel">
+            <h3>透明的计薪与折算逻辑</h3>
+            <p>只按你真正付出的计薪时间拆解每一分钟的价值，休息时间不稀释单价，但休息期间暂停累加：</p>
+            <pre><code>每天计薪分钟 = (下班 − 上班) − 午休时长 − 晚饭时长
+每日预计收入 = 月薪 ÷ 每月工作日
+每分钟收入   = 每日预计收入 ÷ 每天计薪分钟
+今天已挣金额 = 每分钟收入 × 今天已计薪分钟（精确到秒）</code></pre>
+          </div>
+
+          <div class="panel" id="install">
+            <h3>安装与源码构建</h3>
+            <ol class="steps">
+              <li>
+                <strong>免编译直接安装</strong>：下载
+                <a
+                  href="https://github.com/caseclose/work-encourager-open/releases/latest/download/WorkEncourager-macOS-universal-v1.0.0.dmg"
+                  style="color: var(--accent); font-weight: 600"
+                  >Universal .dmg 安装包</a
+                >，将 <code>上班鼓励器.app</code> 拖入 <code>Applications</code>。
+              </li>
+              <li>
+                <strong>首次打开提示</strong>：若遇到 macOS 未签名提示，在终端运行一次：<br />
+                <code>xattr -cr /Applications/上班鼓励器.app</code>
+              </li>
+              <li><strong>从源码一键编译启动</strong>：</li>
+            </ol>
+            <pre><code>git clone https://github.com/caseclose/work-encourager-open.git
+cd work-encourager-open
+npm run start:mac</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        上班鼓励器 · Work Encourager ·
+        <a href="https://github.com/caseclose/work-encourager-open" style="color: var(--accent)">GitHub 开源仓库</a>
+        ·
+        <a href="https://github.com/caseclose/work-encourager-open/releases/latest" style="color: var(--accent)">下载 macOS Release</a>
+      </div>
+    </footer>
+
+    <script>
+      const root = document.documentElement;
+      const themeBtn = document.querySelector("#theme-toggle");
+      const themeGlyph = document.querySelector("#theme-glyph");
+      const tabs = [...document.querySelectorAll(".mode-tab")];
+      const statusText = document.querySelector("#demo-status-text");
+
+      function syncGlyph() {
+        const isDark = root.dataset.theme !== "light";
+        themeGlyph.textContent = isDark ? "☀" : "☾";
+      }
+
+      themeBtn.addEventListener("click", () => {
+        root.dataset.theme = root.dataset.theme === "light" ? "dark" : "light";
+        syncGlyph();
+      });
+
+      for (const tab of tabs) {
+        tab.addEventListener("click", () => {
+          for (const item of tabs) item.setAttribute("aria-selected", item === tab ? "true" : "false");
+          statusText.textContent = tab.dataset.text;
+        });
+      }
+
+      syncGlyph();
+    </script>
+  </body>
+</html>

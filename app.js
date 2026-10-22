@@ -109,7 +109,6 @@ const eyeOffEl = document.querySelector("#eye-off");
 const barModeBtn = document.querySelector("#bar-mode-btn");
 const barModeLabelEl = document.querySelector("#bar-mode-label");
 const quitBtn = document.querySelector("#quit-btn");
-const demoBtn = document.querySelector("#demo-btn");
 const dayButtons = [...document.querySelectorAll(".day")];
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -676,20 +675,6 @@ barModeBtn.addEventListener("click", () => {
 if (quitBtn) {
   quitBtn.addEventListener("click", () => {
     window.webkit?.messageHandlers?.statusBar?.postMessage({ action: "quit" });
-  });
-}
-
-if (demoBtn) {
-  demoBtn.addEventListener("click", () => {
-    form.salary.value = "19800";
-    form.workdays.value = "22";
-    form.start.value = "09:30";
-    form.end.value = "18:30";
-    form.breakEnabled.checked = true;
-    form.breakStart.value = "12:00";
-    form.breakEnd.value = "13:30";
-    isCollapsed = true;
-    persist();
   });
 }
 
