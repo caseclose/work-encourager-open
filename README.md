@@ -42,7 +42,7 @@
 - **真实计薪时长折算**：支持分别勾选并扣除**午休时段**与**晚饭时段**，休息期间金额自动停表，休息结束后从已累计金额无缝续算。
 - **分段式今日时间轴**：将全天班表拆分为「计薪段」与「斜纹休息段」，游标实时指示当前所处位置，并自动倒计时提示距离下一顿饭或下班还有多久。
 
-### 3. 双层激励体系：今日 12 宫格小目标 + 跨天大件心愿单
+### 3. 双层激励体系：自定义今日小目标 + 跨天大件心愿单
 - **今日点亮的小目标**：将单日收入具象化为日常美食与数码单品（工作餐、通勤打车、炸鸡、披萨、有线耳机、自助烤肉、无线鼠标、磁吸充电宝、智能手环、Steam 3A 大作、骨传导耳机等），实时展示解锁进度与还差多少分钟。
 - **跨天大件心愿单**：结合本月已累算工作日与今日实时进账，动态折算 **iPhone**、**MacBook Air** 等跨天大件所需的总工作天数、已攒百分比与剩余天数。
 - **「拍拍自己」即时打气**：点击按钮随机切换暖心鼓励文案，并浮现每分钟进账速率微动效。
@@ -74,10 +74,10 @@
 
 前往 [**GitHub Releases**](https://github.com/caseclose/work-encourager-open/releases/latest) 下载最新版本的安装包：
 
-- **`WorkEncourager-macOS-universal-v1.0.0.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
-- **`WorkEncourager-macOS-universal-v1.0.0.zip`**：解压后直接双击运行 `上班鼓励器.app`。
+- **`WorkEncourager-macOS-universal-v1.3.0.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
+- **`WorkEncourager-macOS-universal-v1.3.0.zip`**：解压后直接双击运行 `上班鼓励器.app`。
 
-> 若首次打开提示未签名开发者限制，可在终端执行一次 `xattr -cr /Applications/上班鼓励器.app` 或在「系统设置 → 隐私与安全性」中点击「仍要打开」。
+> 需要 macOS 13 或更新版本，安装包同时支持 Apple Silicon 与 Intel。此版本采用本地签名，尚未经过 Apple 公证；确认从本仓库下载后，可在「系统设置 → 隐私与安全性」中允许打开。Release 同时提供 SHA256 校验文件。
 
 ### 方式二：从源码编译并运行 macOS 顶部状态栏应用
 
@@ -125,6 +125,10 @@ npm start
 ```
 
 ## 1.3.0 设置与使用
+
+[下载 v1.3.0 与阅读完整更新说明](https://github.com/caseclose/work-encourager-open/releases/tag/v1.3.0)
+
+<img src="./assets/preview-settings.png" width="360" alt="1.3.0 设置页，包含悬浮窗、伙伴与原生操作" />
 
 点击面板右上角的滑杆图标进入「设置」，左上角返回主面板。原有数据会继续保留。
 
