@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>上班鼓励器</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d1712'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23f09b63' stroke-width='2'/%3E%3Cpath d='M12.5 11.5L16 16l3.5-4.5M12.5 16h7M12.5 19h7M16 16v5.5' fill='none' stroke='%23f7efe4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css?v=20261022b" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="top">
+        <div class="brand-wrap">
+          <span class="brand-mark" aria-hidden="true">¥</span>
+          <div>
+            <p class="brand">上班鼓励器</p>
+            <p class="subbrand">把每一分钟折算成看得见的进账</p>
+          </div>
+        </div>
+        <div class="top-right">
+          <button
+            type="button"
+            class="icon-btn"
+            id="theme-btn"
+            aria-label="切换深色或浅色模式"
+            title="切换深色/浅色模式"
+          >
+            <svg class="theme-icon" id="theme-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" />
+              <path d="M12 2.5v2.2M12 19.3v2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+            </svg>
+            <svg class="theme-icon" id="theme-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+              <path d="M20.4 14.6A8.5 8.5 0 0 1 9.4 3.6a8.5 8.5 0 1 0 11 11Z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="icon-btn"
+            id="mask-btn"
+            aria-pressed="false"
+            aria-label="隐藏或显示金额"
+            title="隐藏金额（隐私模式）"
+          >
+            <svg class="eye-icon eye-open" id="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg class="eye-icon eye-off" id="eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+              <path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a18.2 18.2 0 0 1-3.2 4.3" />
+              <path d="M6.6 6.7C3.8 8.5 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6" />
+              <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2" />
+              <line x1="3" y1="3" x2="21" y2="21" />
+            </svg>
+          </button>
+          <button type="button" class="bar-mode-btn" id="bar-mode-btn" title="切换顶部菜单栏显示格式">
+            状态栏：<span id="bar-mode-label">已挣</span>
+          </button>
+          <p class="clock" id="clock"></p>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-labelledby="amount">
+        <div class="kicker-row">
+          <div class="kicker-left">
+            <p class="kicker" id="kicker">今天已经挣了</p>
+            <span class="next-chip" id="next-stop"></span>
+          </div>
+          <p class="pill" id="pill" hidden></p>
+        </div>
+
+        <div class="hero-row">
+          <p class="amount" id="amount">
+            <span class="whole" id="amount-whole">¥0</span><span class="cents" id="amount-cents">.00</span>
+          </p>
+          <span class="toast" id="pat-toast" hidden></span>
+        </div>
+
+        <dl class="stats" id="stats" hidden>
+          <div>
+            <dt>每分钟</dt>
+            <dd id="per-minute"></dd>
+          </div>
+          <div>
+            <dt>每小时</dt>
+            <dd id="per-hour"></dd>
+          </div>
+          <div>
+            <dt>今日预计</dt>
+            <dd id="per-day"></dd>
+          </div>
+        </dl>
+
+        <div class="timeline-card" id="timeline-card" hidden>
+          <div class="timeline-meta">
+            <span class="timeline-status" id="status"></span>
+            <span class="timeline-pct" id="timeline-pct"></span>
+          </div>
+          <div class="dayline" id="dayline">
+            <div class="segments" id="segments"></div>
+            <div class="cursor" id="cursor"></div>
+          </div>
+          <div class="scale" id="scale">
+            <span id="scale-start"></span>
+            <span id="scale-breaks"></span>
+            <span id="scale-end"></span>
+          </div>
+        </div>
+
+        <div class="cheer" id="cheer">
+          <div class="cheer-copy">
+            <p class="headline" id="headline"></p>
+            <p class="pat-line" id="pat-line" hidden></p>
+          </div>
+          <button type="button" class="pat" id="pat">拍拍自己</button>
+        </div>
+
+        <section class="rewards-wrap" id="rewards-wrap" aria-label="今日小目标" hidden>
+          <div class="rewards-head">
+            <p class="rewards-title">今天点亮的小目标</p>
+            <p class="rewards-next" id="rewards-next"></p>
+          </div>
+          <ul class="rewards" id="rewards"></ul>
+        </section>
+
+        <section class="big-goals-wrap" id="big-goals-wrap" aria-label="跨天大件心愿单" hidden>
+          <div class="rewards-head">
+            <p class="rewards-title">跨天大件心愿单</p>
+            <p class="rewards-next" id="big-goals-summary"></p>
+          </div>
+          <ul class="big-goals" id="big-goals"></ul>
+        </section>
+
+        <p class="formula" id="formula"></p>
+      </section>
+
+      <form class="sheet is-collapsed" id="form">
+        <div class="sheet-head" id="sheet-head">
+          <div class="sheet-title-group">
+            <div class="sheet-title-row">
+              <h2>你的班表</h2>
+              <span class="privacy-badge" id="privacy-badge">薪资已隐藏</span>
+            </div>
+            <p id="sheet-sub">09:30–18:30 · 周一至周五</p>
+          </div>
+          <button type="button" class="fold-btn" id="fold-btn" aria-expanded="false" aria-controls="sheet-body">
+            <span id="fold-label">展开修改</span>
+            <svg class="fold-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <path d="M3.2 5.2L7 9l3.8-3.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="sheet-body" id="sheet-body" hidden>
+          <div class="grid">
+            <label class="wide">
+              月薪（元）
+              <input name="salary" id="salary" inputmode="decimal" autocomplete="off" placeholder="请输入你的月薪" />
+            </label>
+            <label>
+              每月工作日
+              <input name="workdays" id="workdays" type="number" min="0.5" max="31" step="0.25" />
+            </label>
+            <label>
+              上班
+              <input name="start" id="start" type="time" required />
+            </label>
+            <label>
+              下班
+              <input name="end" id="end" type="time" required />
+            </label>
+          </div>
+
+          <div class="meals">
+            <div class="meal">
+              <label class="check">
+                <input name="breakEnabled" id="break-enabled" type="checkbox" />
+                扣除午休，暂停计薪
+              </label>
+              <div class="grid break-grid">
+                <label>
+                  午休开始
+                  <input name="breakStart" id="break-start" type="time" />
+                </label>
+                <label>
+                  午休结束
+                  <input name="breakEnd" id="break-end" type="time" />
+                </label>
+              </div>
+            </div>
+
+            <div class="meal">
+              <label class="check">
+                <input name="dinnerEnabled" id="dinner-enabled" type="checkbox" />
+                扣除晚饭，暂停计薪
+              </label>
+              <div class="grid break-grid">
+                <label>
+                  晚饭开始
+                  <input name="dinnerStart" id="dinner-start" type="time" />
+                </label>
+                <label>
+                  晚饭结束
+                  <input name="dinnerEnd" id="dinner-end" type="time" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <fieldset class="days-field">
+            <legend>每周上班</legend>
+            <div class="days" id="days">
+              <button type="button" class="day" data-day="1">一</button>
+              <button type="button" class="day" data-day="2">二</button>
+              <button type="button" class="day" data-day="3">三</button>
+              <button type="button" class="day" data-day="4">四</button>
+              <button type="button" class="day" data-day="5">五</button>
+              <button type="button" class="day" data-day="6">六</button>
+              <button type="button" class="day" data-day="0">日</button>
+            </div>
+          </fieldset>
+
+          <p class="form-message" id="form-message" role="status"></p>
+        </div>
+      </form>
+
+      <footer class="foot">
+        <span>数据仅保存在本机，不会上传。</span>
+        <button type="button" class="quit-btn" id="quit-btn" hidden>退出状态栏应用</button>
+      </footer>
+    </main>
+    <script type="module" src="./app.js?v=20261022b"></script>
+  </body>
+</html>
