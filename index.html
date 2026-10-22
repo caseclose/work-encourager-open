@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261022b" />
+    <link rel="stylesheet" href="./styles.css?v=20261022-goals" />
   </head>
   <body>
     <main class="page">
@@ -58,6 +58,9 @@
           </button>
           <button type="button" class="bar-mode-btn" id="bar-mode-btn" title="切换顶部菜单栏显示格式">
             状态栏：<span id="bar-mode-label">已挣</span>
+          </button>
+          <button type="button" class="icon-btn settings-open" id="settings-open" aria-label="设置" title="设置" aria-haspopup="dialog">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M3 7h8m6 0h4M3 17h3m6 0h9"/><circle cx="14" cy="7" r="3"/><circle cx="9" cy="17" r="3"/></svg>
           </button>
           <p class="clock" id="clock"></p>
         </div>
@@ -137,101 +140,176 @@
         <p class="formula" id="formula"></p>
       </section>
 
-      <form class="sheet is-collapsed" id="form">
-        <div class="sheet-head" id="sheet-head">
-          <div class="sheet-title-group">
-            <div class="sheet-title-row">
-              <h2>你的班表</h2>
-              <span class="privacy-badge" id="privacy-badge">薪资已隐藏</span>
-            </div>
-            <p id="sheet-sub">09:30–18:30 · 周一至周五</p>
-          </div>
-          <button type="button" class="fold-btn" id="fold-btn" aria-expanded="false" aria-controls="sheet-body">
-            <span id="fold-label">展开修改</span>
-            <svg class="fold-icon" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-              <path d="M3.2 5.2L7 9l3.8-3.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="sheet-body" id="sheet-body" hidden>
-          <div class="grid">
-            <label class="wide">
-              月薪（元）
-              <input name="salary" id="salary" inputmode="decimal" autocomplete="off" placeholder="请输入你的月薪" />
-            </label>
-            <label>
-              每月工作日
-              <input name="workdays" id="workdays" type="number" min="0.5" max="31" step="0.25" />
-            </label>
-            <label>
-              上班
-              <input name="start" id="start" type="time" required />
-            </label>
-            <label>
-              下班
-              <input name="end" id="end" type="time" required />
-            </label>
-          </div>
-
-          <div class="meals">
-            <div class="meal">
-              <label class="check">
-                <input name="breakEnabled" id="break-enabled" type="checkbox" />
-                扣除午休，暂停计薪
-              </label>
-              <div class="grid break-grid">
-                <label>
-                  午休开始
-                  <input name="breakStart" id="break-start" type="time" />
-                </label>
-                <label>
-                  午休结束
-                  <input name="breakEnd" id="break-end" type="time" />
-                </label>
-              </div>
-            </div>
-
-            <div class="meal">
-              <label class="check">
-                <input name="dinnerEnabled" id="dinner-enabled" type="checkbox" />
-                扣除晚饭，暂停计薪
-              </label>
-              <div class="grid break-grid">
-                <label>
-                  晚饭开始
-                  <input name="dinnerStart" id="dinner-start" type="time" />
-                </label>
-                <label>
-                  晚饭结束
-                  <input name="dinnerEnd" id="dinner-end" type="time" />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <fieldset class="days-field">
-            <legend>每周上班</legend>
-            <div class="days" id="days">
-              <button type="button" class="day" data-day="1">一</button>
-              <button type="button" class="day" data-day="2">二</button>
-              <button type="button" class="day" data-day="3">三</button>
-              <button type="button" class="day" data-day="4">四</button>
-              <button type="button" class="day" data-day="5">五</button>
-              <button type="button" class="day" data-day="6">六</button>
-              <button type="button" class="day" data-day="0">日</button>
-            </div>
-          </fieldset>
-
-          <p class="form-message" id="form-message" role="status"></p>
-        </div>
-      </form>
+      <p class="settings-save-status" id="goal-save-status" role="status"></p>
 
       <footer class="foot">
         <span>数据仅保存在本机，不会上传。</span>
         <button type="button" class="quit-btn" id="quit-btn" hidden>退出状态栏应用</button>
       </footer>
     </main>
-    <script type="module" src="./app.js?v=20261022b"></script>
+    <dialog id="settings-view" class="settings-view" aria-labelledby="settings-title">
+      <header class="settings-header">
+        <button type="button" class="icon-btn settings-back" id="settings-back" aria-label="返回主面板" title="返回">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>
+        </button>
+        <h2 id="settings-title">设置</h2>
+        <span aria-hidden="true"></span>
+      </header>
+      <div id="settings-content" class="settings-content">
+        <section class="settings-section" aria-labelledby="general-title">
+          <h3 id="general-title">通用</h3>
+          <div class="settings-group">
+            <div class="settings-row settings-row-wrap">
+              <div><strong>主题</strong><p>切换面板和菜单栏外观</p></div>
+              <div class="settings-segments" role="group" aria-label="主题">
+                <button type="button" data-pref="theme" data-value="auto">跟随系统</button>
+                <button type="button" data-pref="theme" data-value="light">浅色</button>
+                <button type="button" data-pref="theme" data-value="dark">深色</button>
+              </div>
+            </div>
+            <label class="settings-row" for="pref-masked"><div><strong>隐藏金额</strong><p>同时遮挡菜单栏、面板和目标编辑金额</p></div><input id="pref-masked" type="checkbox" role="switch" data-pref="masked" class="settings-switch" /></label>
+          </div>
+        </section>
+        <section class="settings-section" aria-labelledby="menubar-title">
+          <h3 id="menubar-title">菜单栏</h3>
+          <div class="settings-group">
+            <div class="settings-row settings-row-wrap"><div><strong>显示方式</strong><p>选择顶部菜单栏的金额文案</p></div>
+              <div class="settings-segments" role="group" aria-label="菜单栏显示方式">
+                <button type="button" data-pref="barMode" data-value="earned">已挣</button>
+                <button type="button" data-pref="barMode" data-value="remaining">剩余</button>
+                <button type="button" data-pref="barMode" data-value="plain">仅金额</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="settings-section" aria-labelledby="panel-title">
+          <h3 id="panel-title">面板</h3>
+          <div class="settings-group">
+            <label class="settings-row" for="pref-showStats"><div><strong>计薪统计</strong><p>显示每分钟、每小时和今日预计收入</p></div><input id="pref-showStats" type="checkbox" role="switch" data-pref="showStats" class="settings-switch" /></label>
+            <label class="settings-row" for="pref-showTimeline"><div><strong>今日时间轴</strong><p>显示工作、午休和晚饭的进度</p></div><input id="pref-showTimeline" type="checkbox" role="switch" data-pref="showTimeline" class="settings-switch" /></label>
+            <label class="settings-row" for="pref-showRewards"><div><strong>今日小目标</strong><p>展示今天收入能点亮的生活目标</p></div><input id="pref-showRewards" type="checkbox" role="switch" data-pref="showRewards" class="settings-switch" /></label>
+            <label class="settings-row" for="pref-showBigGoals"><div><strong>跨天心愿单</strong><p>展示按本月收入累算的大件进度</p></div><input id="pref-showBigGoals" type="checkbox" role="switch" data-pref="showBigGoals" class="settings-switch" /></label>
+          </div>
+        </section>
+        <section class="settings-section" aria-labelledby="goals-title">
+          <h3 id="goals-title">目标</h3>
+          <div class="settings-group"><button type="button" class="settings-row settings-navigation" id="goal-settings-open"><div><strong>管理目标</strong><p>新增、修改或删除小目标和大件心愿</p></div><span aria-hidden="true">›</span></button></div>
+        </section>
+        <section class="settings-section" aria-labelledby="schedule-title">
+          <h3 id="schedule-title">班表</h3>
+          <details class="settings-group settings-schedule"><summary class="settings-row settings-navigation"><div><strong>薪资与工作时间</strong><p>修改月薪、工作日和休息时段</p></div><span aria-hidden="true">⌄</span></summary>
+            <form class="sheet" id="form">
+              <div class="sheet-body" id="sheet-body">
+                <div class="grid">
+                  <label class="wide">
+                    月薪（元）
+                    <input name="salary" id="salary" inputmode="decimal" autocomplete="off" placeholder="请输入你的月薪" />
+                  </label>
+                  <label>
+                    每月工作日
+                    <input name="workdays" id="workdays" type="number" min="0.5" max="31" step="0.25" />
+                  </label>
+                  <label>
+                    上班
+                    <input name="start" id="start" type="time" required />
+                  </label>
+                  <label>
+                    下班
+                    <input name="end" id="end" type="time" required />
+                  </label>
+                </div>
+
+                <div class="meals">
+                  <div class="meal">
+                    <label class="check">
+                      <input name="breakEnabled" id="break-enabled" type="checkbox" />
+                      扣除午休，暂停计薪
+                    </label>
+                    <div class="grid break-grid">
+                      <label>
+                        午休开始
+                        <input name="breakStart" id="break-start" type="time" />
+                      </label>
+                      <label>
+                        午休结束
+                        <input name="breakEnd" id="break-end" type="time" />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="meal">
+                    <label class="check">
+                      <input name="dinnerEnabled" id="dinner-enabled" type="checkbox" />
+                      扣除晚饭，暂停计薪
+                    </label>
+                    <div class="grid break-grid">
+                      <label>
+                        晚饭开始
+                        <input name="dinnerStart" id="dinner-start" type="time" />
+                      </label>
+                      <label>
+                        晚饭结束
+                        <input name="dinnerEnd" id="dinner-end" type="time" />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <fieldset class="days-field">
+                  <legend>每周上班</legend>
+                  <div class="days" id="days">
+                    <button type="button" class="day" data-day="1">一</button>
+                    <button type="button" class="day" data-day="2">二</button>
+                    <button type="button" class="day" data-day="3">三</button>
+                    <button type="button" class="day" data-day="4">四</button>
+                    <button type="button" class="day" data-day="5">五</button>
+                    <button type="button" class="day" data-day="6">六</button>
+                    <button type="button" class="day" data-day="0">日</button>
+                  </div>
+                </fieldset>
+
+                <p class="form-message" id="form-message" role="status"></p>
+              </div>
+            </form>
+          </details>
+        </section>
+        <section class="settings-section" aria-labelledby="about-title">
+          <h3 id="about-title">关于</h3>
+          <div class="settings-group">
+            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.2.0 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
+            <div class="settings-row"><div><strong>数据与隐私</strong><p>薪资、班表和目标仅保存在本机。网页与 macOS 应用分别保存设置。</p></div></div>
+            <a class="settings-row settings-navigation" href="https://github.com/caseclose/work-encourager-open" target="_blank" rel="noopener noreferrer"><div><strong>GitHub 项目</strong><p>查看源码、使用说明和版本发布</p></div><span aria-hidden="true">↗</span></a>
+          </div>
+        </section>
+        <p class="settings-note">通用、菜单栏、面板和班表设置即时保存。</p>
+      </div>
+      <div id="goal-settings" class="settings-goals-page" hidden>
+      <form id="goal-settings-form" novalidate>
+        <div class="goal-dialog-head">
+          <h3>管理我的目标</h3>
+          <p id="goal-settings-description">名称、金额和单位都可以改，保存后立即生效，仅保存在本机。</p>
+          <div class="goal-tabs" role="group" aria-label="选择目标类型">
+            <button type="button" class="goal-button" data-goal-tab="rewards" aria-pressed="true">今日小目标</button>
+            <button type="button" class="goal-button" data-goal-tab="bigGoals" aria-pressed="false">跨天心愿单</button>
+          </div>
+          <p id="goal-category-help"></p>
+        </div>
+        <div id="goal-editor-rows" class="goal-editor-rows"></div>
+        <div class="goal-dialog-foot">
+          <div class="goal-editor-tools">
+            <button type="button" class="goal-button" id="goal-add">＋ 新增目标</button>
+            <button type="button" class="goal-button" id="goal-reset">恢复本类默认</button>
+          </div>
+          <p id="goal-settings-message" role="status" aria-live="polite"></p>
+          <div class="goal-editor-actions">
+            <button type="button" class="goal-button" id="goal-cancel">取消</button>
+            <button type="submit" class="goal-button goal-save">保存目标</button>
+          </div>
+        </div>
+      </form>
+
+      </div>
+    </dialog>
+    <script type="module" src="./app.js?v=20261022-goals"></script>
   </body>
 </html>

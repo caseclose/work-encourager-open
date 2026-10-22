@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 APP_NAME="上班鼓励器"
-INSTALL_DIR="$HOME/Applications"
+INSTALL_DIR="${WORK_ENCOURAGER_INSTALL_DIR:-$HOME/Applications}"
 APP_BUNDLE="$INSTALL_DIR/$APP_NAME.app"
 CONTENTS_DIR="$APP_BUNDLE/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -20,7 +20,7 @@ fi
 rm -rf "$APP_BUNDLE"
 mkdir -p "$MACOS_DIR" "$WEB_DIR"
 
-cp "$ROOT_DIR/index.html" "$ROOT_DIR/styles.css" "$ROOT_DIR/app.js" "$ROOT_DIR/earn.js" "$WEB_DIR/"
+cp "$ROOT_DIR/index.html" "$ROOT_DIR/styles.css" "$ROOT_DIR/app.js" "$ROOT_DIR/earn.js" "$ROOT_DIR/goals.js" "$ROOT_DIR/goal-editor.js" "$ROOT_DIR/settings.js" "$WEB_DIR/"
 
 ICONSET_TMP="$(mktemp -d)/AppIcon.iconset"
 swift "$ROOT_DIR/macos/generate-icon.swift" "$ICONSET_TMP"
@@ -49,9 +49,9 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.1.0</string>
+  <string>1.2.0</string>
   <key>CFBundleVersion</key>
-  <string>2</string>
+  <string>3</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>LSUIElement</key>
@@ -70,6 +70,8 @@ swiftc \
   -o "$MACOS_DIR/WorkEncouragerMenuBar"
 
 touch "$APP_BUNDLE"
-"$LSREGISTER" -f "$APP_BUNDLE" >/dev/null 2>&1 || true
+if [ "$INSTALL_DIR" = "$HOME/Applications" ]; then
+  "$LSREGISTER" -f "$APP_BUNDLE" >/dev/null 2>&1 || true
+fi
 
 echo "Built and installed $APP_BUNDLE"

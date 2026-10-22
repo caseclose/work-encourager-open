@@ -16,7 +16,7 @@ OUT_DIR="$ROOT_DIR/release"
 rm -rf "$OUT_DIR"
 mkdir -p "$MACOS_DIR" "$WEB_DIR" "$OUT_DIR"
 
-cp "$ROOT_DIR/index.html" "$ROOT_DIR/styles.css" "$ROOT_DIR/app.js" "$ROOT_DIR/earn.js" "$WEB_DIR/"
+cp "$ROOT_DIR/index.html" "$ROOT_DIR/styles.css" "$ROOT_DIR/app.js" "$ROOT_DIR/earn.js" "$ROOT_DIR/goals.js" "$ROOT_DIR/goal-editor.js" "$ROOT_DIR/settings.js" "$WEB_DIR/"
 
 ICONSET_TMP="$STAGE_DIR/AppIcon.iconset"
 swift "$ROOT_DIR/macos/generate-icon.swift" "$ICONSET_TMP"

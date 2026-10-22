@@ -175,7 +175,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func pollWebViewStatus() {
-        webViewController.webView?.evaluateJavaScript("window.__getMenuBarStatus && window.__getMenuBarStatus()") { [weak self] result, _ in
+        let systemTheme = NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? "dark" : "light"
+        let script = "window.__setSystemTheme && window.__setSystemTheme('\(systemTheme)'); window.__getMenuBarStatus && window.__getMenuBarStatus()"
+        webViewController.webView?.evaluateJavaScript(script) { [weak self] result, _ in
             if let dict = result as? [String: Any], let title = dict["title"] as? String {
                 self?.updateStatusTitle(title)
                 self?.applyTheme(dict["theme"] as? String)

@@ -1,4 +1,9 @@
 import { computeSnapshot } from "./earn.js";
+import { loadGoals, escapeHTML } from "./goals.js";
+import { setupGoalEditor } from "./goal-editor.js";
+import { setupSettings } from "./settings.js";
+
+let goals = loadGoals(localStorage);
 
 const STORAGE_KEY = "work-encourager-settings-v1";
 
@@ -14,36 +19,19 @@ const defaults = {
   dinnerStart: "18:00",
   dinnerEnd: "19:00",
   weekdays: [1, 2, 3, 4, 5],
-  collapsed: true,
   barMode: "earned",
   masked: false,
   theme: "auto",
+  showStats: true,
+  showTimeline: true,
+  showRewards: true,
+  showBigGoals: true,
 };
 
 const BAR_MODES = [
   { key: "earned", label: "已挣" },
   { key: "remaining", label: "剩余" },
   { key: "plain", label: "仅金额" },
-];
-
-const REWARD_POOL = [
-  { amount: 17, label: "营养工作餐", unit: "一顿" },
-  { amount: 22, label: "通勤打车", unit: "一趟" },
-  { amount: 25, label: "韩式炸鸡", unit: "一份" },
-  { amount: 30, label: "披萨", unit: "一个" },
-  { amount: 49, label: "有线耳机", unit: "一副" },
-  { amount: 80, label: "自助烤肉", unit: "一位" },
-  { amount: 99, label: "无线鼠标", unit: "一个" },
-  { amount: 125, label: "欢乐牧场自助", unit: "一位" },
-  { amount: 199, label: "磁吸充电宝", unit: "一个" },
-  { amount: 249, label: "智能手环", unit: "一个" },
-  { amount: 268, label: "Steam 3A 大作", unit: "一份" },
-  { amount: 329, label: "骨传导运动耳机", unit: "一副" },
-];
-
-const BIG_GOALS = [
-  { amount: 5999, label: "iPhone", unit: "一台" },
-  { amount: 7999, label: "MacBook Air", unit: "一台" },
 ];
 
 const PAT_NOTES = [
@@ -64,7 +52,6 @@ const PHASE_LABEL = {
   off: "休息日",
 };
 
-const DAY_NAMES = { 1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 0: "日" };
 
 const form = document.querySelector("#form");
 const amountEl = document.querySelector("#amount");
@@ -94,12 +81,6 @@ const statsEl = document.querySelector("#stats");
 const pillEl = document.querySelector("#pill");
 const clockEl = document.querySelector("#clock");
 const messageEl = document.querySelector("#form-message");
-const foldBtn = document.querySelector("#fold-btn");
-const foldLabelEl = document.querySelector("#fold-label");
-const sheetHeadEl = document.querySelector("#sheet-head");
-const sheetBodyEl = document.querySelector("#sheet-body");
-const sheetSubEl = document.querySelector("#sheet-sub");
-const privacyBadgeEl = document.querySelector("#privacy-badge");
 const themeBtn = document.querySelector("#theme-btn");
 const themeSunEl = document.querySelector("#theme-sun");
 const themeMoonEl = document.querySelector("#theme-moon");
@@ -113,18 +94,18 @@ const dayButtons = [...document.querySelectorAll(".day")];
 
 const urlParams = new URLSearchParams(window.location.search);
 const isMenuBarApp = urlParams.get("menubar") === "1";
-const initialSystemTheme = urlParams.get("systemTheme");
+let systemTheme = urlParams.get("systemTheme");
 if (isMenuBarApp) {
   document.documentElement.classList.add("is-menubar");
   if (quitBtn) quitBtn.hidden = false;
 }
 
 let patIndex = -1;
-let isCollapsed = true;
 let barMode = "earned";
 let isMasked = false;
 let themeMode = "auto";
 let toastTimer = null;
+let panelPreferences = { showStats: true, showTimeline: true, showRewards: true, showBigGoals: true };
 const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
 
 const money = new Intl.NumberFormat("zh-CN", {
@@ -190,10 +171,10 @@ function fillForm(settings) {
   for (const button of dayButtons) {
     button.setAttribute("aria-pressed", settings.weekdays.includes(Number(button.dataset.day)) ? "true" : "false");
   }
-  isCollapsed = true;
   barMode = BAR_MODES.some((item) => item.key === settings.barMode) ? settings.barMode : "earned";
   isMasked = Boolean(settings.masked);
   themeMode = ["light", "dark", "auto"].includes(settings.theme) ? settings.theme : "auto";
+  for (const key of Object.keys(panelPreferences)) panelPreferences[key] = settings[key] !== false;
   syncBreakFields();
 }
 
@@ -212,16 +193,16 @@ function readForm() {
     weekdays: dayButtons
       .filter((button) => button.getAttribute("aria-pressed") === "true")
       .map((button) => Number(button.dataset.day)),
-    collapsed: isCollapsed,
     barMode,
     masked: isMasked,
     theme: themeMode,
+    ...panelPreferences,
   };
 }
 
 function effectiveTheme() {
   if (themeMode === "light" || themeMode === "dark") return themeMode;
-  if (initialSystemTheme === "dark" || initialSystemTheme === "light") return initialSystemTheme;
+  if (systemTheme === "dark" || systemTheme === "light") return systemTheme;
   return darkMedia.matches ? "dark" : "light";
 }
 
@@ -245,30 +226,6 @@ function syncMaskUI() {
   form.salary.type = isMasked ? "password" : "text";
 }
 
-function formatCollapsedSummary(settings) {
-  const parts = [];
-  if (settings.start && settings.end) {
-    parts.push(`${settings.start}–${settings.end}`);
-  }
-  const dayLabels = settings.weekdays.map((day) => DAY_NAMES[day]).filter(Boolean);
-  if (dayLabels.length > 0) {
-    parts.push(`周${dayLabels.join("、")}`);
-  }
-  return parts.join(" · ");
-}
-
-function syncFoldUI(settings, snapshot) {
-  const effectiveCollapsed = isCollapsed && snapshot.ok;
-  form.classList.toggle("is-collapsed", effectiveCollapsed);
-  sheetBodyEl.hidden = effectiveCollapsed;
-  privacyBadgeEl.hidden = !effectiveCollapsed;
-  foldBtn.setAttribute("aria-expanded", effectiveCollapsed ? "false" : "true");
-  foldLabelEl.textContent = effectiveCollapsed ? "展开修改" : "收起班表";
-  sheetSubEl.textContent = effectiveCollapsed
-    ? formatCollapsedSummary(settings)
-    : "改完立刻重算，仅保存在本机。";
-}
-
 function syncBreakFields() {
   const lunchOn = form.breakEnabled.checked;
   form.breakStart.disabled = !lunchOn;
@@ -280,21 +237,6 @@ function syncBreakFields() {
 
 function save(settings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-}
-
-function pickRewards(perDay) {
-  const within = REWARD_POOL.filter((item) => item.amount <= perDay * 0.99);
-  const picked = within.length <= 12
-    ? within
-    : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(
-        (slot) => within[Math.round((slot * (within.length - 1)) / 11)],
-      );
-  if (picked.length > 0) return picked;
-  return [0.2, 0.5, 0.85].map((ratio, index) => ({
-    amount: Math.max(0.5, Number((perDay * ratio).toFixed(1))),
-    label: ["今日起步", "今日过半", "今日收尾"][index],
-    unit: "一档",
-  }));
 }
 
 function headlineFor(snapshot) {
@@ -364,10 +306,12 @@ function renderTimeline(snapshot, now) {
 }
 
 function renderRewards(snapshot) {
-  const items = pickRewards(snapshot.perDay);
+  const items = [...goals.rewards].sort((a, b) => a.amount - b.amount);
   const nextItem = items.find((item) => snapshot.earned + 0.005 < item.amount);
 
-  if (nextItem) {
+  if (!items.length) {
+    rewardsNextEl.textContent = "还没有小目标，到「设置 → 管理目标」添加。";
+  } else if (nextItem) {
     const gap = Math.max(0, nextItem.amount - snapshot.earned);
     const mins = formatDuration(gap / snapshot.perMinute, "ceil");
     rewardsNextEl.textContent = isMasked
@@ -380,11 +324,11 @@ function renderRewards(snapshot) {
   rewardsEl.replaceChildren(
     ...items.map((item) => {
       const done = snapshot.earned + 0.005 >= item.amount;
-      const isNext = nextItem && nextItem.amount === item.amount;
+      const isNext = nextItem && nextItem === item;
       const ratio = Math.max(0, Math.min(1, snapshot.earned / item.amount));
       const li = document.createElement("li");
       li.className = `reward${done ? " is-done" : ""}${isNext ? " is-next" : ""}`;
-      const costText = isMasked ? "****" : formatMoney(item.amount, item.amount % 1 ? 1 : 0);
+      const costText = isMasked ? "****" : formatMoney(item.amount, item.amount % 1 ? 2 : 0);
       const subText = done
         ? `已挣够${item.unit}`
         : isNext
@@ -392,10 +336,10 @@ function renderRewards(snapshot) {
           : item.unit;
       li.innerHTML = `
         <div class="reward-top">
-          <span class="reward-name">${item.label}</span>
+          <span class="reward-name">${escapeHTML(item.label)}</span>
           <span class="reward-cost">${costText}</span>
         </div>
-        <p class="reward-sub">${subText}</p>
+        <p class="reward-sub">${escapeHTML(subText)}</p>
         <div class="reward-bar"><span style="width:${Math.round(ratio * 100)}%"></span></div>
       `;
       return li;
@@ -410,15 +354,17 @@ function renderBigGoals(snapshot) {
     ? `本月已累算 ${workedDays.toFixed(1)} 个工作日 · ****`
     : `本月已累算 ${workedDays.toFixed(1)} 个工作日 · ${money.format(accumulated)}`;
 
+  if (!goals.bigGoals.length) bigGoalsSummaryEl.textContent = "还没有心愿，到「设置 → 管理目标」添加。";
+
   bigGoalsEl.replaceChildren(
-    ...BIG_GOALS.map((goal) => {
+    ...goals.bigGoals.map((goal) => {
       const totalDays = goal.amount / snapshot.perDay;
       const ratio = Math.max(0, Math.min(1, accumulated / goal.amount));
       const pct = Math.round(ratio * 1000) / 10;
       const leftAmount = Math.max(0, goal.amount - accumulated);
       const leftDays = leftAmount / snapshot.perDay;
       const todayDays = snapshot.earned / snapshot.perDay;
-      const costText = isMasked ? "****" : formatMoney(goal.amount, 0);
+      const costText = isMasked ? "****" : formatMoney(goal.amount, goal.amount % 1 ? 2 : 0);
       const footText =
         leftAmount <= 0.01
           ? `本月已攒够${goal.unit}（共约 ${totalDays.toFixed(1)} 个工作日）`
@@ -430,7 +376,7 @@ function renderBigGoals(snapshot) {
       li.className = "big-goal";
       li.innerHTML = `
         <div class="big-goal-top">
-          <span class="big-goal-name">${goal.label}</span>
+          <span class="big-goal-name">${escapeHTML(goal.label)}</span>
           <span class="big-goal-cost">${costText}</span>
         </div>
         <p class="big-goal-meta">
@@ -438,7 +384,7 @@ function renderBigGoals(snapshot) {
           <span class="big-goal-pct">${pct.toFixed(1)}%</span>
         </p>
         <div class="big-goal-bar"><span style="width:${Math.min(100, pct)}%"></span></div>
-        <p class="big-goal-foot">${footText}</p>
+        <p class="big-goal-foot">${escapeHTML(footText)}</p>
       `;
       return li;
     }),
@@ -488,11 +434,10 @@ function render() {
   setAmountText(snapshot);
   syncThemeUI();
   syncMaskUI();
-  syncFoldUI(settings, snapshot);
   messageEl.textContent = snapshot.ok || snapshot.code === "empty" ? "" : snapshot.error;
 
   if (!snapshot.ok) {
-    headlineEl.textContent = snapshot.error;
+    headlineEl.textContent = snapshot.code === "empty" ? "点击右上角「设置」，在班表中填写月薪即可开始。" : snapshot.error;
     nextStopEl.hidden = true;
     pillEl.hidden = true;
     timelineCardEl.hidden = true;
@@ -526,7 +471,7 @@ function render() {
   nextStopEl.hidden = false;
   nextStopEl.textContent = nextStopText(settings, snapshot);
 
-  timelineCardEl.hidden = false;
+  timelineCardEl.hidden = !settings.showTimeline;
   scaleStartEl.textContent = `${settings.start} 上班`;
   scaleBreaksEl.textContent = pauseMarks.join(" · ");
   scaleEndEl.textContent = `${settings.end} 下班`;
@@ -537,18 +482,19 @@ function render() {
   timelinePctEl.textContent = `${percent}%`;
 
   renderTimeline(snapshot, now);
-  rewardsWrapEl.hidden = false;
+  rewardsWrapEl.hidden = !settings.showRewards;
   renderRewards(snapshot);
-  bigGoalsWrapEl.hidden = false;
+  bigGoalsWrapEl.hidden = !settings.showBigGoals;
   renderBigGoals(snapshot);
 
-  statsEl.hidden = false;
+  statsEl.hidden = !settings.showStats;
   document.querySelector("#per-minute").textContent = isMasked ? "****" : formatRate(snapshot.perMinute);
   document.querySelector("#per-hour").textContent = isMasked ? "****" : formatRate(snapshot.perHour);
   document.querySelector("#per-day").textContent = isMasked ? "****" : money.format(snapshot.perDay);
   formulaEl.textContent = isMasked
     ? `月薪 **** ÷ ${settings.workdays} 天 ÷ ${formatDuration(snapshot.dayMinutes)}${breakText} = 每分钟 ****`
     : `月薪 ÷ ${settings.workdays} 天 ÷ ${formatDuration(snapshot.dayMinutes)}${breakText} = 每分钟 ${formatRate(snapshot.perMinute)}`;
+  window.dispatchEvent(new Event("encourager-preferences"));
   postMenuBarStatus(snapshot);
 }
 
@@ -651,20 +597,11 @@ darkMedia.addEventListener("change", () => {
   if (themeMode === "auto") render();
 });
 window.__toggleTheme = toggleTheme;
-
-function toggleFold() {
-  isCollapsed = !isCollapsed;
-  persist();
-}
-
-foldBtn.addEventListener("click", (event) => {
-  event.stopPropagation();
-  toggleFold();
-});
-
-sheetHeadEl.addEventListener("click", () => {
-  toggleFold();
-});
+window.__setSystemTheme = value => {
+  if (!["dark", "light"].includes(value) || systemTheme === value) return;
+  systemTheme = value;
+  if (themeMode === "auto") render();
+};
 
 barModeBtn.addEventListener("click", () => {
   const idx = BAR_MODES.findIndex((item) => item.key === barMode);
@@ -678,6 +615,7 @@ if (quitBtn) {
   });
 }
 
+form.addEventListener("submit", event => event.preventDefault());
 form.addEventListener("input", persist);
 form.addEventListener("change", persist);
 
@@ -697,6 +635,24 @@ for (const button of dayButtons) {
 for (const input of form.querySelectorAll('input[type="number"]')) {
   input.addEventListener("wheel", () => input.blur(), { passive: true });
 }
+
+const goalEditor = setupGoalEditor({
+  getGoals: () => goals,
+  isMasked: () => isMasked,
+  onSave: saved => { goals = saved; render(); },
+});
+
+setupSettings({
+  goalEditor,
+  getSettings: readForm,
+  updateSettings: (key, value) => {
+    if (key === "theme") themeMode = value;
+    else if (key === "masked") { if (isMasked !== value) toggleMask(); return; }
+    else if (key === "barMode") barMode = value;
+    else if (Object.hasOwn(panelPreferences, key)) panelPreferences[key] = value;
+    persist();
+  },
+});
 
 fillForm(loadSettings());
 render();
