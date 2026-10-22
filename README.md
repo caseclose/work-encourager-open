@@ -3,12 +3,19 @@
   <h1>上班鼓励器 · Work Encourager</h1>
   <p><strong>把每一个工作日的每一分钟，折算成看得见的实时进账与生活小目标</strong></p>
   <p>
+    <a href="https://caseclose.github.io/work-encourager-open/">
+      <img src="https://img.shields.io/badge/Live_Demo-GitHub_Pages-d95a2b?style=flat-square&logo=github" alt="GitHub Pages Live Demo" />
+    </a>
     <a href="https://github.com/caseclose/work-encourager-open/releases/latest">
       <img src="https://img.shields.io/github/v/release/caseclose/work-encourager-open?style=flat-square&label=macOS_Release&color=f09b63" alt="Latest Release" />
     </a>
     <img src="https://img.shields.io/badge/macOS-Universal_(Apple_Silicon_%26_Intel)-1d1712?style=flat-square&logo=apple&logoColor=f5c37e" alt="macOS Menu Bar App" />
-    <img src="https://img.shields.io/badge/Web-ES_Modules-d95a2b?style=flat-square&logo=javascript&logoColor=white" alt="Web ES Modules" />
     <img src="https://img.shields.io/badge/Privacy-100%25_Local-2e7d32?style=flat-square" alt="100% Local Privacy" />
+  </p>
+  <p>
+    <a href="https://caseclose.github.io/work-encourager-open/"><strong>在线体验 (GitHub Pages)</strong></a>
+    ·
+    <a href="https://github.com/caseclose/work-encourager-open/releases/latest"><strong>下载 macOS 状态栏版 (.dmg)</strong></a>
   </p>
 </div>
 

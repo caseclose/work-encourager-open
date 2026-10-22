@@ -944,19 +944,50 @@ legend {
   font-size: 0.76rem;
 }
 
+.foot-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demo-btn,
+.dl-link,
+.gh-link,
 .quit-btn {
-  padding: 4px 10px;
-  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border: 1px solid var(--line-strong);
   border-radius: 999px;
   background: var(--card);
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
+.dl-link {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.demo-btn:hover,
+.dl-link:hover,
+.gh-link:hover,
 .quit-btn:hover {
   border-color: var(--accent);
   color: var(--ink);
+}
+
+html.is-menubar .demo-btn,
+html.is-menubar .dl-link,
+html.is-menubar .gh-link {
+  display: none;
 }
 
 html.is-menubar .page {

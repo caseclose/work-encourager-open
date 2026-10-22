@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <title>上班鼓励器</title>
+    <meta name="description" content="上班鼓励器：按月薪、工作日和上下班时间实时折算今天已经挣了多少，支持网页端与 macOS 顶部菜单栏原生应用。" />
+    <title>上班鼓励器 · Work Encourager</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d1712'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23f09b63' stroke-width='2'/%3E%3Cpath d='M12.5 11.5L16 16l3.5-4.5M12.5 16h7M12.5 19h7M16 16v5.5' fill='none' stroke='%23f7efe4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261022b" />
+    <link rel="stylesheet" href="./styles.css?v=20261022c" />
   </head>
   <body>
     <main class="page">
@@ -229,9 +229,28 @@
 
       <footer class="foot">
         <span>数据仅保存在本机，不会上传。</span>
-        <button type="button" class="quit-btn" id="quit-btn" hidden>退出状态栏应用</button>
+        <div class="foot-actions">
+          <button type="button" class="demo-btn" id="demo-btn">填入示例数据体验</button>
+          <a
+            class="dl-link"
+            id="dl-link"
+            href="https://github.com/caseclose/work-encourager-open/releases/latest/download/WorkEncourager-macOS-universal-v1.0.0.dmg"
+          >
+            下载 macOS 状态栏版 (.dmg)
+          </a>
+          <a
+            class="gh-link"
+            id="gh-link"
+            href="https://github.com/caseclose/work-encourager-open"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub 源码
+          </a>
+          <button type="button" class="quit-btn" id="quit-btn" hidden>退出状态栏应用</button>
+        </div>
       </footer>
     </main>
-    <script type="module" src="./app.js?v=20261022b"></script>
+    <script type="module" src="./app.js?v=20261022c"></script>
   </body>
 </html>
