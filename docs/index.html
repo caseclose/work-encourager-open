@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
-      content="上班鼓励器 v1.3.0：macOS 实时计薪、个性化目标、调休日历、提醒中心与迷你悬浮窗。支持 Apple Silicon 和 Intel，个人数据保存在本机。"
+      content="上班鼓励器 v1.4.0：macOS 实时计薪、番茄钟、树苗与星光成长反馈、模块排序和迷你悬浮窗。支持 Apple Silicon 和 Intel，个人数据保存在本机。"
     />
     <title>上班鼓励器 · Work Encourager — macOS 顶部状态栏实时计薪与目标激励工具</title>
     <link rel="icon" href="./assets/icon.png" />
@@ -729,7 +729,9 @@
       .settings-image-link { display:block; max-width:360px; width:100%; margin:auto; }
       .settings-image-link img { display:block; width:100%; border:1px solid var(--line-strong); border-radius:22px; box-shadow:var(--shadow); }
       @media(prefers-reduced-motion:reduce) { html {scroll-behavior:auto;} .btn {transition:none;} }
-    </style>
+    @media (max-width:640px) { .gallery.focus-gallery { display:grid; grid-template-columns:1fr; } .focus-gallery .shot-card { display:block; } }
+      .focus-gallery .shot-caption { padding:12px; font-size:.85rem; color:var(--muted); }
+      </style>
   </head>
   <body>
     <header class="nav-wrap">
@@ -740,7 +742,7 @@
         </a>
         <nav class="nav-links">
           <a href="#gallery">界面预览</a>
-          <a href="#features">1.3.0 新功能</a>
+          <a href="#features">1.4.0 新功能</a>
           <a href="#formula">计薪逻辑</a>
           <a href="#install">安装与构建</a>
         </nav>
@@ -750,7 +752,7 @@
           </button>
           <a
             class="btn btn-primary btn-sm"
-            href="https://github.com/caseclose/work-encourager-open/releases/download/v1.3.0/WorkEncourager-macOS-universal-v1.3.0.dmg"
+            href="https://github.com/caseclose/work-encourager-open/releases/download/v1.4.0/WorkEncourager-macOS-universal-v1.4.0.dmg"
           >
             下载 .dmg
           </a>
@@ -766,22 +768,22 @@
 
     <main class="container">
       <section class="hero">
-        <span class="badge">v1.3.0 · macOS 13+ · Apple Silicon &amp; Intel</span>
+        <span class="badge">v1.4.0 · macOS 13+ · Apple Silicon &amp; Intel</span>
         <h1>把漫长的工作日，拆成每一分钟看得见的进账。</h1>
         <p class="hero-sub">
           上班鼓励器（Work Encourager）把工时变成实时进账，也把努力变成自己的小目标。
-          1.3.0 新增目标封面与排序、调休日历、提醒中心和迷你悬浮窗；所有偏好，都能在设置里调整。
+          1.4.0 新增可收起的番茄钟、树苗与星光成长反馈，以及自由调整的模块布局；把每一段专注，变成看得见的收获。
         </p>
         <div class="hero-ctas">
           <a
             class="btn btn-primary"
-            href="https://github.com/caseclose/work-encourager-open/releases/download/v1.3.0/WorkEncourager-macOS-universal-v1.3.0.dmg"
+            href="https://github.com/caseclose/work-encourager-open/releases/download/v1.4.0/WorkEncourager-macOS-universal-v1.4.0.dmg"
           >
             下载 macOS 安装包 (.dmg)
           </a>
           <a
             class="btn"
-            href="https://github.com/caseclose/work-encourager-open/releases/download/v1.3.0/WorkEncourager-macOS-universal-v1.3.0.zip"
+            href="https://github.com/caseclose/work-encourager-open/releases/download/v1.4.0/WorkEncourager-macOS-universal-v1.4.0.zip"
           >
             下载压缩包 (.zip)
           </a>
@@ -790,7 +792,7 @@
           </a>
         </div>
 
-        <p class="release-note-link"><a href="https://github.com/caseclose/work-encourager-open/releases/tag/v1.3.0">查看 1.3.0 完整更新说明 ↗</a> · <a href="https://github.com/caseclose/work-encourager-open/releases/download/v1.3.0/SHA256SUMS.txt">下载校验文件</a></p>
+        <p class="release-note-link"><a href="https://github.com/caseclose/work-encourager-open/releases/tag/v1.4.0">查看 1.4.0 完整更新说明 ↗</a> · <a href="https://github.com/caseclose/work-encourager-open/releases/download/v1.4.0/SHA256SUMS.txt">下载校验文件</a></p>
         <div class="menubar-demo" aria-label="macOS 顶部状态栏效果演示">
           <div class="mac-topbar">
             <div class="mac-left">
@@ -818,6 +820,7 @@
               <button type="button" class="mode-tab" data-text="剩余 ¥379.40" aria-selected="false">剩余模式</button>
               <button type="button" class="mode-tab" data-text="¥520.60" aria-selected="false">仅金额</button>
               <button type="button" class="mode-tab" data-text="1时20分下班" aria-selected="false">下班倒计时</button>
+              <button type="button" class="mode-tab" data-text="🍅 专注 24:18" aria-selected="false">番茄钟</button>
               <button type="button" class="mode-tab" data-text="今日 68%" aria-selected="false">今日进度</button>
               <button type="button" class="mode-tab" data-text="🎧 耳机 72%" aria-selected="false">目标进度</button>
               <button type="button" class="mode-tab" data-text="🎧 还需46分" aria-selected="false">目标所需工时</button>
@@ -831,7 +834,7 @@
       <section id="gallery">
         <div class="section-head">
           <h2>实机渲染预览</h2>
-          <p>以下为 1.3.0 的真实渲染截图，使用虚拟演示薪资与固定时间；支持深色、浅色和金额打码。</p>
+          <p>计薪与目标界面预览（沿用 1.3.0 截图），使用虚拟演示薪资与固定时间；1.4.0 的番茄钟与布局预览见下方。</p>
         </div>
         <div class="gallery-tabs" role="tablist" aria-label="切换预览截图">
           <button type="button" class="gallery-tab" data-shot="0" aria-selected="true">深色模式</button>
@@ -864,23 +867,35 @@
       </section>
 
       <section id="features">
-        <div class="section-head"><h2>1.3.0，新功能都在设置里</h2><p>从自己的小目标，到每天的工作节奏，让鼓励器更贴近你的习惯。</p></div>
+        <div class="section-head"><h2>1.4.0，让专注慢慢长成收获</h2><p>从自己的小目标，到每天的工作节奏，让鼓励器更贴近你的习惯。</p></div>
         <div class="features">
+          <article class="feat"><span class="feat-tag">Pomodoro</span><h3>专注一段，安心休息</h3><p>自定义专注、短休息、长休息与轮数，支持暂停、恢复和收起。完成后手动开始下一段，跳过不计完成。</p></article>
+          <article class="feat"><span class="feat-tag">Grow &amp; Collect</span><h3>种一棵树，点一颗星</h3><p>经典倒计时、树苗成长、星光积累三种样式。随进度变化，完整专注才累计收获；重置本轮保留收获。</p></article>
+          <article class="feat"><span class="feat-tag">Your Layout</span><h3>面板按你的顺序来</h3><p>九个模块支持拖动和上下排序。布局、样式与收起状态保存在本机，完整备份也会带上这些偏好。</p></article>
           <article class="feat"><span class="feat-tag">Personal Goals</span><h3>每个目标，都有自己的样子</h3><p>添加、修改或删除目标，为它选择 Emoji、颜色与本地图片封面。置顶、拖拽或上下移动，按你的顺序展示。</p></article>
           <article class="feat"><span class="feat-tag">Celebration</span><h3>点亮目标，轻轻庆祝</h3><p>轻量动画、系统通知或静默，随你选择。每日小目标与每月心愿分别去重，重新打开不会重复庆祝。</p></article>
           <article class="feat"><span class="feat-tag">Calendar</span><h3>班表也能灵活调整</h3><p>按日期手动标记放假、补班、提前下班与当天休息时段。计薪、倒计时、时间轴随当天安排一起变化。</p></article>
-          <article class="feat"><span class="feat-tag">Menu Bar</span><h3>菜单栏，八种显示方式</h3><p>收入、剩余金额、下班倒计时、今日进度、目标进度与所需工时，还能随工作状态自动切换。</p></article>
+          <article class="feat"><span class="feat-tag">Menu Bar</span><h3>菜单栏，九种显示方式</h3><p>收入、剩余金额、下班倒计时、今日进度、目标进度与所需工时，新增番茄钟倒计时，也能随工作状态自动切换。</p></article>
           <article class="feat"><span class="feat-tag">Reminders</span><h3>到点休息，也记得下班</h3><p>午休、晚饭、下班与定时活动提醒集中管理。设置允许提醒时间和跨午夜免打扰，通知不显示薪资金额。</p></article>
-          <article class="feat"><span class="feat-tag">Mini Window</span><h3>把小小进度放在手边</h3><p>可拖动的原生迷你悬浮窗，支持置顶和透明度调整。显示收入、下班倒计时或置顶目标的进度。</p></article>
+          <article class="feat"><span class="feat-tag">Mini Window</span><h3>把小小进度放在手边</h3><p>可拖动的原生迷你悬浮窗，支持置顶和透明度调整。显示收入、下班倒计时、目标进度或番茄钟。</p></article>
           <article class="feat"><span class="feat-tag">Native Comfort</span><h3>更顺手的原生操作</h3><p>开机自动启动、⌘⇧E / ⌃⌥E 全局快捷键、记住上次页面，以及手动检查 GitHub 正式版本。</p></article>
           <article class="feat"><span class="feat-tag">Local Backup</span><h3>你的设置，随时带走</h3><p>完整 JSON 备份保留薪资、班表与偏好；仅目标备份不含薪资。导入先检查、再确认替换。</p></article>
           <article class="feat"><span class="feat-tag">Companion</span><h3>橘猫和小芽，陪你一会儿</h3><p>可选动态伙伴，随着工作、休息、下班改变状态。点一下，给自己一句鼓励；也可以随时关闭。</p></article>
         </div>
       </section>
+      <section id="focus-preview">
+        <div class="section-head"><h2>每一段专注，都留下点什么。</h2><p>1.4.0 实际界面截图：树苗长成、星光点亮，或者把计时轻轻收起。演示使用 1 分钟专注，不包含个人薪资。</p></div>
+        <div class="gallery focus-gallery">
+          <article class="shot-card"><img src="./assets/preview-pomodoro-tree.png" alt="1.4.0 完成专注后长成的小树" loading="lazy" /><div class="shot-caption">树苗成长 · 完成专注才累计收获</div></article>
+          <article class="shot-card"><img src="./assets/preview-pomodoro-stars.png" alt="1.4.0 星光积累番茄钟" loading="lazy" /><div class="shot-caption">星光积累 · 让努力留下一点光</div></article>
+          <article class="shot-card"><img src="./assets/preview-pomodoro-collapsed.png" alt="1.4.0 收起番茄钟仍保留倒计时和操作" loading="lazy" /><div class="shot-caption">轻轻收起 · 计时和操作仍在手边</div></article>
+        </div>
+        <p class="settings-footnote">阶段通知需授权并保持应用运行；遵循允许提醒与免打扰时段。电脑睡眠时不会唤醒，恢复运行后检查是否到期。完整备份保留偏好和布局，不包含当前计时与累计收获。</p>
+      </section>
       <section id="settings-preview">
         <div class="split settings-showcase">
-          <div class="panel"><span class="feat-tag">One Settings Page</span><h2>把想调整的，都放在同一个地方。</h2><p>点击面板右上角的滑杆图标，进入设置。主题、隐私、目标、日历、提醒、悬浮窗、启动方式与备份都有清晰的分组。</p><ul class="steps"><li>保留深色、浅色、跟随系统与一键金额打码。</li><li>目标和单日班表点击保存生效，其余偏好即时保存。</li><li>原有设置继续保留，无需重新填写薪资和目标。</li><li>“关于”包含版本、项目链接和贡献者 Feng Wang · @caseclose。</li></ul><p class="settings-footnote">通知、开机启动和快捷键按需开启；系统权限以 macOS 实际授权状态为准。网页中不可用的原生选项会禁用。</p><a class="btn" href="https://github.com/caseclose/work-encourager-open/releases/tag/v1.3.0">阅读更新说明 ↗</a></div>
-          <a class="settings-image-link" href="./assets/preview-settings.png" aria-label="查看 1.3.0 设置页完整截图"><img src="./assets/preview-settings.png" alt="1.3.0 原生设置页：悬浮窗、陪伴伙伴、开机启动和快捷键" loading="lazy" /></a>
+          <div class="panel"><span class="feat-tag">One Settings Page</span><h2>把想调整的，都放在同一个地方。</h2><p>点击面板右上角的滑杆图标，进入设置。主题、隐私、番茄钟、模块布局、目标、日历、提醒、悬浮窗、启动方式与备份都有清晰的分组。</p><ul class="steps"><li>保留深色、浅色、跟随系统与一键金额打码。</li><li>目标和单日班表点击保存生效，其余偏好即时保存。</li><li>原有设置继续保留，无需重新填写薪资和目标。</li><li>“关于”包含版本、项目链接和贡献者 Feng Wang · @caseclose。</li></ul><p class="settings-footnote">通知、开机启动和快捷键按需开启；系统权限以 macOS 实际授权状态为准。网页中不可用的原生选项会禁用。</p><a class="btn" href="https://github.com/caseclose/work-encourager-open/releases/tag/v1.4.0">阅读更新说明 ↗</a></div>
+          <a class="settings-image-link" href="./assets/preview-layout.png" aria-label="查看 1.4.0 模块布局设置截图"><img src="./assets/preview-layout.png" alt="1.4.0 模块排序设置" loading="lazy" /></a>
         </div>
       </section>
 
@@ -901,7 +916,7 @@
               <li>
                 <strong>macOS 13 或更新版本</strong>：Apple Silicon 与 Intel 共用一个安装包。下载
                 <a
-                  href="https://github.com/caseclose/work-encourager-open/releases/download/v1.3.0/WorkEncourager-macOS-universal-v1.3.0.dmg"
+                  href="https://github.com/caseclose/work-encourager-open/releases/download/v1.4.0/WorkEncourager-macOS-universal-v1.4.0.dmg"
                   style="color: var(--accent); font-weight: 600"
                   >Universal .dmg 安装包</a
                 >，将 <code>上班鼓励器.app</code> 拖入 <code>Applications</code>。
@@ -921,10 +936,10 @@ npm run start:mac</code></pre>
 
     <footer>
       <div class="container">
-        上班鼓励器 · Work Encourager · v1.3.0 ·
+        上班鼓励器 · Work Encourager · v1.4.0 ·
         <a href="https://github.com/caseclose/work-encourager-open" style="color: var(--accent)">GitHub 开源仓库</a>
         · 贡献者 <a href="https://github.com/caseclose">Feng Wang · @caseclose</a> ·
-        <a href="https://github.com/caseclose/work-encourager-open/releases/tag/v1.3.0" style="color: var(--accent)">下载 macOS Release</a>
+        <a href="https://github.com/caseclose/work-encourager-open/releases/tag/v1.4.0" style="color: var(--accent)">下载 macOS Release</a>
       </div>
     </footer>
 

@@ -31,11 +31,17 @@
 
 ---
 
+## 1.4.0 更新
+
+新增番茄钟与树苗／星光成长反馈，支持收起、暂停恢复，以及九个模块的自由排序。查看 [完整更新说明](https://github.com/caseclose/work-encourager-open/releases/tag/v1.4.0)。
+
+<img src="./assets/preview-pomodoro-tree.png" width="360" alt="1.4.0 树苗成长番茄钟" />
+
 ## 核心特性
 
 ### 1. 原生 macOS 顶部状态栏应用 (`NSStatusBar` + `NSPopover`)
 - **常驻菜单栏跳表**：在 Mac 屏幕右上角状态栏实时显示 `¥` 徽标与今日累计收入，使用等宽数字字体（`monospacedDigitSystemFont`），数字跳动时菜单栏宽度绝不抖动。
-- **八种状态栏显示**：支持收入、剩余金额、下班倒计时、工作进度、目标进度与自动切换等模式。
+- **九种状态栏显示**：支持收入、剩余金额、下班倒计时、工作进度、目标进度、番茄钟与自动切换等模式。
 - **原生弹窗面板**：左键点击状态栏图标弹出完整仪表盘，点击外部自动收起；右键点击可快速呼出「隐藏/显示金额」「切换深色/浅色模式」「退出」快捷菜单。
 
 ### 2. 分时段计薪与进度时间轴
@@ -74,8 +80,8 @@
 
 前往 [**GitHub Releases**](https://github.com/caseclose/work-encourager-open/releases/latest) 下载最新版本的安装包：
 
-- **`WorkEncourager-macOS-universal-v1.3.0.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
-- **`WorkEncourager-macOS-universal-v1.3.0.zip`**：解压后直接双击运行 `上班鼓励器.app`。
+- **`WorkEncourager-macOS-universal-v1.4.0.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
+- **`WorkEncourager-macOS-universal-v1.4.0.zip`**：解压后直接双击运行 `上班鼓励器.app`。
 
 > 需要 macOS 13 或更新版本，安装包同时支持 Apple Silicon 与 Intel。此版本采用本地签名，尚未经过 Apple 公证；确认从本仓库下载后，可在「系统设置 → 隐私与安全性」中允许打开。Release 同时提供 SHA256 校验文件。
 
