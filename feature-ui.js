@@ -12,6 +12,13 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   const section = (title, body) => `<section class="settings-section"><h3>${title}</h3><div class="settings-group">${body}</div></section>`;
   root.innerHTML = section('日历与临时班表', '<details class="feature-details"><summary>调休、补班与提前下班 <span>⌄</span></summary><div id="calendar-settings"></div></details>')
     + section('目标达成', row('庆祝方式','只在新目标达成时提醒一次',select('celebration-mode','庆祝方式',[['animation','轻量动画'],['notification','系统通知'],['silent','静默']])) + '<p class="feature-note">通知只显示目标已达成，不包含薪资和金额。</p>')
+    + section('番茄钟', row('显示番茄钟','在主面板开始专注、暂停、休息',toggle('pomodoro-visible','显示番茄钟'))
+      + row('专注时长','1–180 分钟', '<input id="pomodoro-focus" type="number" min="1" max="180" aria-label="专注时长（分钟）" />')
+      + row('短休息','1–60 分钟', '<input id="pomodoro-short" type="number" min="1" max="60" aria-label="短休息（分钟）" />')
+      + row('长休息','1–120 分钟', '<input id="pomodoro-long" type="number" min="1" max="120" aria-label="长休息（分钟）" />')
+      + row('长休息间隔','完成多少个番茄后进入长休息（1–12）', '<input id="pomodoro-round-count" type="number" min="1" max="12" aria-label="长休息间隔" />')
+      + row('阶段结束通知','遵循提醒中心的允许时间和免打扰时间',toggle('pomodoro-notifications','番茄钟阶段结束通知'))
+      + '<p class="feature-note">更改时长从下一段计时生效；已开始的阶段保持原时长。完成后手动开始下一段，跳过不计入完成数。计时会保存到本机，完整备份包含偏好，不包含正在进行的计时。通知需应用运行，睡眠期间不唤醒电脑。</p>')
     + section('提醒中心', row('启用系统提醒','首次开启时请求通知权限',toggle('reminder-enabled','启用系统提醒'))
       + row('午休与晚饭','进入休息时段时提醒',toggle('reminder-break','午休与晚饭提醒'))
       + row('下班提醒','到点收工，给生活留点时间',toggle('reminder-end','下班提醒'))
@@ -22,7 +29,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
       + '<p id="notification-state" class="feature-note" role="status"></p>')
     + section('迷你悬浮窗', row('显示悬浮窗','可拖动；点击“打开面板”返回主界面',toggle('mini-enabled','显示悬浮窗'))
       + row('始终置顶','让小窗显示在其他窗口上方',toggle('mini-pinned','悬浮窗始终置顶'))
-      + row('显示内容','目标优先显示置顶的一项',select('mini-content','悬浮窗显示内容',[['income','今日收入'],['countdown','下班倒计时'],['goal','目标进度']]))
+      + row('显示内容','目标优先显示置顶的一项',select('mini-content','悬浮窗显示内容',[['income','今日收入'],['countdown','下班倒计时'],['goal','目标进度'],['pomodoro','番茄钟']]))
       + row('不透明度','调整悬浮窗的可见程度','<div class="opacity-control"><input id="mini-opacity" type="range" min="0.35" max="1" step="0.05" aria-label="悬浮窗不透明度" /><output id="mini-opacity-value">100%</output></div>'))
     + section('陪伴伙伴', row('显示伙伴','随工作、休息与下班切换状态',toggle('companion-enabled','显示伙伴'))
       + row('伙伴形象','点击伙伴，也能给自己一句鼓励',select('companion-character','伙伴形象',[['cat','橘猫'],['sprout','小芽']])) )
@@ -32,7 +39,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
       + '<p id="native-state" class="feature-note" role="status"></p>')
     + section('备份与恢复', '<div class="settings-row"><div><strong>导出到本机</strong><p>完整备份含薪资；目标备份仅含目标与封面。</p><div class="feature-buttons"><button id="export-full" type="button">完整备份</button><button id="export-goals" type="button">仅导出目标</button></div></div></div>'
       + '<div class="settings-row"><div><strong>导入备份</strong><p>先检查文件，再确认替换。不会更改系统权限或开机启动设置。</p><div class="feature-buttons"><button id="import-backup" type="button">选择备份文件</button><input id="backup-file" type="file" accept=".json,application/json" hidden /></div><div id="import-preview" hidden><p id="import-description"></p><div class="feature-buttons"><button id="import-confirm" type="button">确认替换</button><button id="import-cancel" type="button">取消</button></div></div><p id="backup-state" role="status"></p></div></div>')
-    + section('更新与版本', row('上班鼓励器 1.3.0','查看 GitHub 最新正式版本','<button id="check-updates" type="button">检查更新</button>') + '<p id="update-state" class="feature-note" role="status"></p><div class="feature-buttons" id="release-link-wrap" hidden><button id="open-release" type="button">打开版本发布页</button></div>');
+    + section('更新与版本', row('上班鼓励器 1.4.0','查看 GitHub 最新正式版本','<button id="check-updates" type="button">检查更新</button>') + '<p id="update-state" class="feature-note" role="status"></p><div class="feature-buttons" id="release-link-wrap" hidden><button id="open-release" type="button">打开版本发布页</button></div>');
   const el = id => document.getElementById(id);
   let nativeState = { miniEnabled:false,miniPinned:true,miniOpacity:1,hotkey:'none',launchAtLogin:false,notifications:'notDetermined' };
   let pendingImport = null, pendingPermission = null, releaseURL = null;
@@ -43,7 +50,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
     const purpose = pendingPermission; pendingPermission = null;
     if(!purpose)return;
     if (granted) {
-      update(f => { if (purpose === 'celebration') f.celebrationMode = 'notification'; else if (purpose === 'reminders') f.reminders.enabled = true; });
+      update(f => { if (purpose === 'celebration') f.celebrationMode = 'notification'; else if (purpose === 'pomodoro') f.pomodoro.notifications = true; else if (purpose === 'reminders') f.reminders.enabled = true; });
       el('notification-state').textContent = '已允许通知。应用运行期间按设置提醒。';
     } else { sync(); el('notification-state').textContent = '尚未允许通知，请在系统设置的“通知”中开启上班鼓励器。'; }
   }
@@ -54,6 +61,9 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
     try { permissionDone('Notification' in window && await Notification.requestPermission() === 'granted'); }
     catch { permissionDone(false); }
   }
+  bind('pomodoro-visible', e=>update(f=>{f.pomodoro.visible=e.checked;}));
+  bind('pomodoro-notifications', e=>e.checked?requestPermission('pomodoro'):update(f=>{f.pomodoro.notifications=false;}));
+  for(const [id,key] of [['focus','focus'],['short','short'],['long','long'],['round-count','rounds']]) bind(`pomodoro-${id}`,e=>update(f=>{f.pomodoro[key]=Number(e.value);}));
   bind('celebration-mode', e => e.value === 'notification' ? requestPermission('celebration') : update(f => { f.celebrationMode = e.value; }));
   bind('reminder-enabled', e => e.checked ? requestPermission('reminders') : update(f => { f.reminders.enabled = false; }));
   for (const key of ['break','end','rest']) bind(`reminder-${key}`, e => update(f => { f.reminders[key] = e.checked; }));
@@ -115,6 +125,10 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   };
   function sync() {
     const f=getFeatures();
+    el('pomodoro-visible').checked=f.pomodoro.visible;
+    el('pomodoro-notifications').checked=f.pomodoro.notifications;
+    el('pomodoro-notifications').disabled=Boolean(pendingPermission);
+    for(const [id,key] of [['focus','focus'],['short','short'],['long','long'],['round-count','rounds']])el(`pomodoro-${id}`).value=f.pomodoro[key];
     el('celebration-mode').value=f.celebrationMode;
     el('celebration-mode').disabled=Boolean(pendingPermission);el('reminder-enabled').disabled=Boolean(pendingPermission);
     el('reminder-enabled').checked=f.reminders.enabled;

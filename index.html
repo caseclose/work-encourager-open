@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261022-130" />
+    <link rel="stylesheet" href="./styles.css?v=20261023-140" />
     <link rel="stylesheet" href="./features.css?v=130" />
     <link rel="stylesheet" href="./calendar.css?v=130" />
     <link rel="stylesheet" href="./goals-ui.css?v=130" />
@@ -65,6 +65,14 @@
         </div>
         <p class="clock" id="clock"></p>
       </header>
+
+      <section id="pomodoro-card" class="pomodoro-card" aria-label="番茄钟">
+        <div class="pomodoro-heading"><strong id="pomodoro-phase">🍅 专注</strong><span id="pomodoro-rounds"></span></div>
+        <div id="pomodoro-time" class="pomodoro-time" role="timer">25:00</div>
+        <progress id="pomodoro-progress" max="1" value="0" aria-label="番茄钟进度"></progress>
+        <p id="pomodoro-message" role="status"></p>
+        <div class="pomodoro-actions"><button id="pomodoro-toggle" type="button">开始</button><button id="pomodoro-skip" type="button">跳过阶段</button><button id="pomodoro-reset" type="button">重置本轮</button></div>
+      </section>
 
       <section class="stage" id="stage" aria-labelledby="amount">
         <div class="kicker-row">
@@ -177,7 +185,7 @@
             <div class="settings-row settings-row-wrap"><div><strong>显示方式</strong><p>选择金额、倒计时、进度或目标</p></div>
               <select data-pref="barMode" aria-label="菜单栏显示方式">
                 <option value="earned">已挣金额</option><option value="remaining">剩余金额</option><option value="plain">仅金额</option>
-                <option value="countdown">下班倒计时</option><option value="progress">今日进度</option><option value="goal">目标进度</option><option value="goalTime">距目标所需工时</option><option value="adaptive">随状态自动切换</option>
+                <option value="countdown">下班倒计时</option><option value="progress">今日进度</option><option value="goal">目标进度</option><option value="goalTime">距目标所需工时</option><option value="pomodoro">番茄钟倒计时</option><option value="adaptive">随状态自动切换</option>
               </select>
             </div>
           </div>
@@ -277,7 +285,7 @@
         <section class="settings-section" aria-labelledby="about-title">
           <h3 id="about-title">关于</h3>
           <div class="settings-group">
-            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.3.0 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
+            <div class="settings-row"><div><strong>上班鼓励器</strong><p>版本 1.4.0 · 把每一分钟折算成看得见的进账</p></div><span class="settings-app-mark" aria-hidden="true">¥</span></div>
             <div class="settings-row"><div><strong>数据与隐私</strong><p>薪资、班表和目标仅保存在本机。网页与 macOS 应用分别保存设置。</p></div></div>
             <a class="settings-row settings-navigation" href="https://github.com/caseclose" target="_blank" rel="noopener noreferrer"><div><strong>贡献者</strong><p>Feng Wang · @caseclose</p></div><span aria-hidden="true">↗</span></a>
             <a class="settings-row settings-navigation" href="https://github.com/caseclose/work-encourager-open" target="_blank" rel="noopener noreferrer"><div><strong>GitHub 项目</strong><p>查看源码、使用说明和版本发布</p></div><span aria-hidden="true">↗</span></a>
@@ -313,6 +321,6 @@
       </div>
     </dialog>
     <div id="celebration-toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261022-130"></script>
+    <script type="module" src="./app.js?v=20261023-140"></script>
   </body>
 </html>

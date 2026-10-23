@@ -1,12 +1,13 @@
+import { pomodoroDefaults, validatePomodoro } from './pomodoro.js';
 import { computeSnapshot } from './earn.js';
 import { validateGoals, orderedGoals, GOALS_STORAGE_KEY } from './goals.js';
 import { validateDateOverrides, localDateKey } from './earn.js';
 
 export const FEATURES_KEY = 'work-encourager-features-v1';
 export const BASE_KEY = 'work-encourager-settings-v1';
-export const BAR_MODES = ['earned', 'remaining', 'plain', 'countdown', 'progress', 'goal', 'goalTime', 'adaptive'];
+export const BAR_MODES = ['earned', 'remaining', 'plain', 'countdown', 'progress', 'goal', 'goalTime', 'adaptive', 'pomodoro'];
 export const featureDefaults = () => ({
-  dateOverrides: {}, celebrationMode: 'animation', rememberPage: true,
+  pomodoro: pomodoroDefaults(), dateOverrides: {}, celebrationMode: 'animation', rememberPage: true,
   companion: { enabled: false, character: 'cat' }, miniContent: 'income',
   reminders: { enabled: false, break: true, end: true, rest: false, restInterval: 60,
     activeStart: '08:00', activeEnd: '22:30', quietStart: '22:30', quietEnd: '08:00' },
@@ -26,10 +27,10 @@ export function validateFeatures(value = {}) {
     reminders[k] = r[k] ?? defaults.reminders[k];
     if (!clock(reminders[k])) throw new Error('提醒时间格式无效。');
   }
-  return { dateOverrides: validateDateOverrides(value.dateOverrides || {}),
+  return { pomodoro: validatePomodoro(value.pomodoro), dateOverrides: validateDateOverrides(value.dateOverrides || {}),
     celebrationMode: choice(value.celebrationMode, ['animation','notification','silent'], 'animation'),
     rememberPage: bool(value.rememberPage, true),
-    miniContent: choice(value.miniContent, ['income','countdown','goal'], 'income'),
+    miniContent: choice(value.miniContent, ['income','countdown','goal','pomodoro'], 'income'),
     companion: { enabled: bool(c.enabled, false), character: choice(c.character, ['cat','sprout'], 'cat') }, reminders };
 }
 export function loadFeatures(storage) {
@@ -50,7 +51,7 @@ export function validateBase(value) {
   return result;
 }
 export function createBackup({ goals, settings, features }, scope = 'full') {
-  const data = { app: 'work-encourager', schema: 1, version: '1.3.0', scope, createdAt: new Date().toISOString(), goals: validateGoals(goals) };
+  const data = { app: 'work-encourager', schema: 1, version: '1.4.0', scope, createdAt: new Date().toISOString(), goals: validateGoals(goals) };
   if (scope === 'full') { data.settings = validateBase(settings); data.features = validateFeatures(features); data.features.dateOverrides = validateDateOverrides(data.features.dateOverrides, data.settings); }
   else if (scope !== 'goals') throw new Error('备份类型无效。');
   return JSON.stringify(data, null, 2);

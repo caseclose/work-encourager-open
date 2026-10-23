@@ -1142,3 +1142,14 @@ html.is-menubar .meals {
 .settings-schedule .sheet h2 { font-size: 0.9rem; }
 html.is-menubar .settings-schedule .sheet { padding: 14px; margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .settings-switch, .settings-switch::before { transition: none; } }
+
+.pomodoro-card { margin: 0 0 16px; padding: 20px; border: 1px solid var(--line); border-radius: 24px; background: var(--card); min-width: 0; }
+.pomodoro-card[hidden] { display: none; }
+.pomodoro-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pomodoro-heading span, #pomodoro-message { color: var(--muted); font-size: .82rem; }
+.pomodoro-time { font-size: clamp(2.5rem, 10vw, 3.6rem); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; padding: 8px; }
+#pomodoro-progress { display: block; width: 100%; height: 7px; accent-color: var(--accent); }
+.pomodoro-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pomodoro-actions button { border: 1px solid var(--line-strong); border-radius: 14px; padding: 10px 14px; background: var(--soft); color: var(--ink); cursor: pointer; font: inherit; font-size: .85rem; }
+#pomodoro-toggle { background: var(--accent); color: var(--bg); font-weight: 700; }
+.pomodoro-actions button:disabled { opacity: .4; cursor: default; }

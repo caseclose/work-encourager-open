@@ -1,3 +1,4 @@
+import { createPomodoro, setupPomodoroUI, formatTimer, phaseNames } from './pomodoro.js';
 import { computeSnapshot } from "./earn.js";
 import { loadGoals, escapeHTML, orderedGoals } from "./goals.js";
 import { setupGoalEditor } from "./goal-editor.js";
@@ -7,6 +8,10 @@ import { BAR_MODES, FEATURES_KEY, loadFeatures, validateFeatures, createReminder
 import { setupFeatureUI, setupCompanion, notifySafely } from "./feature-ui.js";
 let features = loadFeatures(localStorage);
 let featureUI;
+const pomodoro = createPomodoro({ storage:localStorage, getConfig:()=>features.pomodoro, onComplete:phase=>{
+  if(features.pomodoro.notifications && remindersAllowed({...features.reminders,enabled:true},new Date())) notifySafely({title:phase==='focus'?'番茄钟：专注完成':'番茄钟：休息结束',body:phase==='focus'?'辛苦了，给自己一点休息时间。':'准备好后，手动开始下一段专注。'});
+}});
+const pomodoroUI = setupPomodoroUI(pomodoro,()=>features.pomodoro);
 let lastGoalsRender = 0, lastRenderedGoals = null, lastGoalMask = null;
 let celebrationTimer;
 const companion = setupCompanion();
@@ -438,6 +443,7 @@ function setAmountText(snapshot) {
 }
 
 function render() {
+  pomodoroUI.update();
   const settings = readForm();
   const now = new Date();
   const snapshot = computeSnapshot(settings, now);
@@ -540,7 +546,10 @@ function buildMenuBarStatus(snapshot) {
       if(tracked && !features.companion.enabled)mini.emoji=tracked.goal.emoji;
     }
   }
-  return { title:barText(barMode,snapshot,goals,isMasked),phase:snapshot.phase || 'empty',masked:isMasked,theme,mini };
+  const timer = pomodoro.tick();
+  const timerTitle = `🍅 ${phaseNames[timer.phase]} ${formatTimer(timer.remaining)}${timer.status==='paused'?' ⏸':timer.status==='done'?' ✓':''}`;
+  if(features.miniContent==='pomodoro') mini={title:formatTimer(timer.remaining),detail:`${phaseNames[timer.phase]} · ${{idle:'待开始',running:'进行中',paused:'已暂停',done:'已完成'}[timer.status]}`,progress:timer.progress,emoji:'🍅'};
+  return { title:barMode==='pomodoro'?timerTitle:barText(barMode,snapshot,goals,isMasked),phase:snapshot.phase || 'empty',masked:isMasked,theme,mini };
 }
 
 function postMenuBarStatus(snapshot) {
@@ -665,12 +674,13 @@ featureUI = setupFeatureUI({
     localStorage.setItem(FEATURES_KEY,JSON.stringify(checked));
     if(JSON.stringify(features.dateOverrides)!==JSON.stringify(checked.dateOverrides))celebrations=createGoalCelebrations({storage:localStorage,onCelebrate:celebrate});
     features=checked;
+    pomodoro.configure();
     if(!features.rememberPage)localStorage.removeItem('work-encourager-last-page');
     reminders.reset();render();
   },
   onImport: backup => {
     goals=backup.goals;
-    if(backup.scope==='full'){features=backup.features;fillForm(backup.settings);}
+    if(backup.scope==='full'){features=backup.features;fillForm(backup.settings);pomodoro.configure();}
     celebrations=createGoalCelebrations({storage:localStorage,onCelebrate:celebrate});
     reminders.reset();render();
   },

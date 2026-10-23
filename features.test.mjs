@@ -42,7 +42,7 @@ test('full backup round-trips salary, schedule, dated overrides and personalized
   const serialized = createBackup(source, 'full');
   const envelope = JSON.parse(serialized);
   assert.equal(envelope.app, 'work-encourager');
-  assert.equal(envelope.version, '1.3.0');
+  assert.equal(envelope.version, '1.4.0');
   assert.ok(Number.isFinite(Date.parse(envelope.createdAt)));
   const parsed = parseBackup(serialized);
   assert.equal(parsed.scope, 'full');
@@ -260,8 +260,8 @@ const snapshot = () => ({ ok: true, phase: 'working', earned: 120, monthEarned: 
 test('all status-bar modes produce their expected concise content', () => {
   const expected = { earned: '已挣 ¥120.00', remaining: '剩余 ¥360.00', plain: '¥120.00',
     countdown: '8时0分下班', progress: '今日 25%', goal: '☕ 咖啡目标 60%', goalTime: '☕ 还需1时20分', adaptive: '已挣 ¥120.00' };
-  assert.deepEqual(Object.keys(expected).sort(), [...BAR_MODES].sort());
-  for (const mode of BAR_MODES) assert.equal(barText(mode, snapshot(), goals(), false, at(10, 0)), expected[mode], mode);
+  assert.deepEqual(Object.keys(expected).sort(), BAR_MODES.filter(mode=>mode!=='pomodoro').sort());
+  for (const mode of BAR_MODES.filter(mode=>mode!=='pomodoro')) assert.equal(barText(mode, snapshot(), goals(), false, at(10, 0)), expected[mode], mode);
 });
 
 test('money status-bar modes mask amounts and remaining income cannot be negative', () => {

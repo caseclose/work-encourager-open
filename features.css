@@ -35,3 +35,5 @@
 @keyframes celebrate-in {from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.companion svg,.pet-eyes,#celebration-toast,#celebration-toast::before{animation:none!important}}
 @media(max-width:360px){#extended-settings .settings-row-wrap{align-items:flex-start}.time-pair input{width:92px}.feature-note{padding-inline:12px}.goal-card-visual{height:52px}}
+
+#extended-settings input[type="number"] { width:90px; max-width:100%; color:var(--ink); background:var(--card); border:1px solid var(--line-strong); border-radius:10px; padding:8px; font:inherit; }

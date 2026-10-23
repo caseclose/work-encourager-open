@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 5173",
-    "test": "node --test earn.test.mjs goals.test.mjs calendar.test.mjs celebrations.test.mjs features.test.mjs",
+    "test": "node --test earn.test.mjs goals.test.mjs calendar.test.mjs celebrations.test.mjs features.test.mjs pomodoro.test.mjs",
     "build:mac": "bash macos/build-app.sh",
     "start:mac": "bash macos/build-app.sh && open ~/Applications/上班鼓励器.app",
     "release:mac": "bash macos/package-release.sh"
   },
-  "version": "1.3.0"
+  "version": "1.4.0"
 }
