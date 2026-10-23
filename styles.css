@@ -1153,3 +1153,25 @@ html.is-menubar .settings-schedule .sheet { padding: 14px; margin: 0; border: 0;
 .pomodoro-actions button { border: 1px solid var(--line-strong); border-radius: 14px; padding: 10px 14px; background: var(--soft); color: var(--ink); cursor: pointer; font: inherit; font-size: .85rem; }
 #pomodoro-toggle { background: var(--accent); color: var(--bg); font-weight: 700; }
 .pomodoro-actions button:disabled { opacity: .4; cursor: default; }
+/* Module order follows the DOM, including keyboard and screen-reader navigation. */
+.stage > [data-module] { min-width:0; }
+.stage > .pomodoro-card { margin:0 0 12px; }
+.pomodoro-primary { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
+.pomodoro-primary > span { font-size:.78rem; color:var(--muted); }
+.pomodoro-primary button, #pomodoro-collapse { border:1px solid var(--line-strong); border-radius:12px; padding:7px 12px; font:inherit; font-size:.8rem; cursor:pointer; }
+#pomodoro-collapse { background:var(--soft); color:var(--ink); margin-left:auto; }
+#pomodoro-compact-time { font-size:1.2rem; font-weight:700; font-variant-numeric:tabular-nums; }
+#pomodoro-body[hidden], #pomodoro-visual[hidden], .pomodoro-achievement[hidden] { display:none; }
+#pomodoro-visual { max-width:240px; margin:10px auto 0; }
+#pomodoro-visual svg { display:block; width:100%; height:130px; overflow:visible; }
+.growing-tree { transform-origin:110px 118px; transform:scale(var(--growth,.15)); transition:transform 1s ease; }
+.growth-star { transition:opacity 1s ease; }
+.pomodoro-achievement { color:var(--muted); text-align:center; font-size:.8rem; line-height:1.6; }
+.pomodoro-card[data-status="done"] #pomodoro-visual { filter:drop-shadow(0 0 12px var(--gold)); }
+.pomodoro-card[data-collapsed="true"] { padding:12px 16px; }
+.pomodoro-card[data-collapsed="true"] .pomodoro-primary { margin-top:6px; }
+.layout-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; border-bottom:1px solid var(--line); font-size:13px; }
+.layout-row > span { min-width:0; }
+.layout-row > div { display:flex; gap:6px; flex-shrink:0; }
+#extended-settings .layout-row button { padding:5px 8px; font-size:12px; }
+@media(prefers-reduced-motion:reduce) { .growing-tree,.growth-star { transition:none; } }

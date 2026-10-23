@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261023-140" />
-    <link rel="stylesheet" href="./features.css?v=130" />
+    <link rel="stylesheet" href="./styles.css?v=20261023-141" />
+    <link rel="stylesheet" href="./features.css?v=141" />
     <link rel="stylesheet" href="./calendar.css?v=130" />
     <link rel="stylesheet" href="./goals-ui.css?v=130" />
   </head>
@@ -66,15 +66,20 @@
         <p class="clock" id="clock"></p>
       </header>
 
-      <section id="pomodoro-card" class="pomodoro-card" aria-label="番茄钟">
-        <div class="pomodoro-heading"><strong id="pomodoro-phase">🍅 专注</strong><span id="pomodoro-rounds"></span></div>
+      <section class="stage" id="stage" aria-label="主面板模块">
+      <section id="pomodoro-card" class="pomodoro-card" aria-label="番茄钟" data-module="pomodoro">
+        <div class="pomodoro-heading"><strong id="pomodoro-phase">🍅 专注</strong><span id="pomodoro-compact-time" hidden></span><button id="pomodoro-collapse" type="button" aria-expanded="true" aria-controls="pomodoro-body">收起</button></div>
+        <div class="pomodoro-primary"><span id="pomodoro-rounds"></span><button id="pomodoro-toggle" type="button">开始</button></div>
+        <div id="pomodoro-body">
+        <div id="pomodoro-visual" aria-hidden="true"></div><p id="pomodoro-achievement" class="pomodoro-achievement" role="status"></p>
         <div id="pomodoro-time" class="pomodoro-time" role="timer">25:00</div>
         <progress id="pomodoro-progress" max="1" value="0" aria-label="番茄钟进度"></progress>
         <p id="pomodoro-message" role="status"></p>
-        <div class="pomodoro-actions"><button id="pomodoro-toggle" type="button">开始</button><button id="pomodoro-skip" type="button">跳过阶段</button><button id="pomodoro-reset" type="button">重置本轮</button></div>
+        <div class="pomodoro-actions"><button id="pomodoro-skip" type="button">跳过阶段</button><button id="pomodoro-reset" type="button">重置本轮</button></div>
+        </div>
       </section>
 
-      <section class="stage" id="stage" aria-labelledby="amount">
+        <div data-module="income">
         <div class="kicker-row">
           <div class="kicker-left">
             <p class="kicker" id="kicker">今天已经挣了</p>
@@ -90,7 +95,8 @@
           <span class="toast" id="pat-toast" hidden></span>
         </div>
 
-        <dl class="stats" id="stats" hidden>
+        </div>
+        <dl data-module="stats" class="stats" id="stats" hidden>
           <div>
             <dt>每分钟</dt>
             <dd id="per-minute"></dd>
@@ -105,7 +111,7 @@
           </div>
         </dl>
 
-        <div class="timeline-card" id="timeline-card" hidden>
+        <div class="timeline-card" id="timeline-card" data-module="timeline" hidden>
           <div class="timeline-meta">
             <span class="timeline-status" id="status"></span>
             <span class="timeline-pct" id="timeline-pct"></span>
@@ -121,7 +127,7 @@
           </div>
         </div>
 
-        <div class="cheer" id="cheer">
+        <div class="cheer" id="cheer" data-module="cheer">
           <div class="cheer-copy">
             <p class="headline" id="headline"></p>
             <p class="pat-line" id="pat-line" hidden></p>
@@ -129,8 +135,8 @@
           <button type="button" class="pat" id="pat">拍拍自己</button>
         </div>
 
-        <button type="button" id="companion" class="companion" hidden><svg viewBox="0 0 96 104" aria-hidden="true"></svg><span></span></button>
-        <section class="rewards-wrap" id="rewards-wrap" aria-label="今日小目标" hidden>
+        <button type="button" id="companion" data-module="companion" class="companion" hidden><svg viewBox="0 0 96 104" aria-hidden="true"></svg><span></span></button>
+        <section class="rewards-wrap" id="rewards-wrap" data-module="rewards" aria-label="今日小目标" hidden>
           <div class="rewards-head">
             <p class="rewards-title">今天点亮的小目标</p>
             <p class="rewards-next" id="rewards-next"></p>
@@ -138,7 +144,7 @@
           <ul class="rewards" id="rewards"></ul>
         </section>
 
-        <section class="big-goals-wrap" id="big-goals-wrap" aria-label="跨天大件心愿单" hidden>
+        <section class="big-goals-wrap" id="big-goals-wrap" data-module="bigGoals" aria-label="跨天大件心愿单" hidden>
           <div class="rewards-head">
             <p class="rewards-title">跨天大件心愿单</p>
             <p class="rewards-next" id="big-goals-summary"></p>
@@ -146,7 +152,7 @@
           <ul class="big-goals" id="big-goals"></ul>
         </section>
 
-        <p class="formula" id="formula"></p>
+        <p class="formula" id="formula" data-module="formula"></p>
       </section>
 
       <p class="settings-save-status" id="goal-save-status" role="status"></p>
@@ -321,6 +327,6 @@
       </div>
     </dialog>
     <div id="celebration-toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261023-140"></script>
+    <script type="module" src="./app.js?v=20261023-141"></script>
   </body>
 </html>

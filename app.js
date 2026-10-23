@@ -1,3 +1,4 @@
+import { applyLayout } from './layout.js';
 import { createPomodoro, setupPomodoroUI, formatTimer, phaseNames } from './pomodoro.js';
 import { computeSnapshot } from "./earn.js";
 import { loadGoals, escapeHTML, orderedGoals } from "./goals.js";
@@ -11,7 +12,7 @@ let featureUI;
 const pomodoro = createPomodoro({ storage:localStorage, getConfig:()=>features.pomodoro, onComplete:phase=>{
   if(features.pomodoro.notifications && remindersAllowed({...features.reminders,enabled:true},new Date())) notifySafely({title:phase==='focus'?'番茄钟：专注完成':'番茄钟：休息结束',body:phase==='focus'?'辛苦了，给自己一点休息时间。':'准备好后，手动开始下一段专注。'});
 }});
-const pomodoroUI = setupPomodoroUI(pomodoro,()=>features.pomodoro);
+const pomodoroUI = setupPomodoroUI(pomodoro,()=>features.pomodoro,collapsed=>{const next=validateFeatures({...features,pomodoro:{...features.pomodoro,collapsed}});localStorage.setItem(FEATURES_KEY,JSON.stringify(next));features=next;featureUI?.refresh();});
 let lastGoalsRender = 0, lastRenderedGoals = null, lastGoalMask = null;
 let celebrationTimer;
 const companion = setupCompanion();
@@ -443,6 +444,7 @@ function setAmountText(snapshot) {
 }
 
 function render() {
+  applyLayout(features.moduleOrder);
   pomodoroUI.update();
   const settings = readForm();
   const now = new Date();

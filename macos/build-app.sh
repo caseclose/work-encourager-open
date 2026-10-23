@@ -20,7 +20,7 @@ fi
 rm -rf "$APP_BUNDLE"
 mkdir -p "$MACOS_DIR" "$WEB_DIR"
 
-cp "$ROOT_DIR/index.html" "$ROOT_DIR/styles.css" "$ROOT_DIR/app.js" "$ROOT_DIR/earn.js" "$ROOT_DIR/goals.js" "$ROOT_DIR/goal-editor.js" "$ROOT_DIR/settings.js" "$ROOT_DIR/features.js" "$ROOT_DIR/pomodoro.js" "$ROOT_DIR/feature-ui.js" "$ROOT_DIR/features.css" "$ROOT_DIR/calendar.js" "$ROOT_DIR/calendar.css" "$ROOT_DIR/celebrations.js" "$ROOT_DIR/goals-ui.css" "$WEB_DIR/"
+cp "$ROOT_DIR/index.html" "$ROOT_DIR/styles.css" "$ROOT_DIR/app.js" "$ROOT_DIR/earn.js" "$ROOT_DIR/goals.js" "$ROOT_DIR/goal-editor.js" "$ROOT_DIR/settings.js" "$ROOT_DIR/features.js" "$ROOT_DIR/pomodoro.js" "$ROOT_DIR/layout.js" "$ROOT_DIR/feature-ui.js" "$ROOT_DIR/features.css" "$ROOT_DIR/calendar.js" "$ROOT_DIR/calendar.css" "$ROOT_DIR/celebrations.js" "$ROOT_DIR/goals-ui.css" "$WEB_DIR/"
 
 ICONSET_TMP="$(mktemp -d)/AppIcon.iconset"
 swift "$ROOT_DIR/macos/generate-icon.swift" "$ICONSET_TMP"
@@ -51,7 +51,7 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
   <key>CFBundleShortVersionString</key>
   <string>1.4.0</string>
   <key>CFBundleVersion</key>
-  <string>6</string>
+  <string>7</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>LSUIElement</key>

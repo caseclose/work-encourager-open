@@ -42,3 +42,28 @@ test('old feature preferences migrate; duration and type bounds reject malformed
  const features=validateFeatures({pomodoro:{focus:40}});
  assert.equal(parseBackup(createBackup({settings,features,goals:defaultGoals()})).features.pomodoro.focus,40);
 });
+
+
+test('visual and collapsed preferences migrate and reject invalid styles',()=>{
+ assert.equal(validatePomodoro({}).collapsed,false);
+ assert.equal(validatePomodoro({}).style,'classic');
+ assert.equal(validatePomodoro({style:'tree',collapsed:true}).style,'tree');
+ for(const value of [{style:'unknown'},{collapsed:'true'}])assert.throws(()=>validatePomodoro(value));
+});
+test('lifetime rewards survive restart and resetting a round; skipping cannot earn rewards',()=>{
+ const f=fixture();f.timer.start();f.advance(1500000);f.timer.tick();
+ assert.equal(f.timer.view().totalCompleted,1);assert.equal(f.build().view().totalCompleted,1);
+ f.timer.reset();assert.equal(f.timer.view().completed,0);assert.equal(f.timer.view().totalCompleted,1);
+ f.timer.start();f.timer.skip();assert.equal(f.timer.view().totalCompleted,1);
+});
+import { defaultLayout, validateLayout, moveModule } from './layout.js';
+test('module ordering preserves all modules and respects boundaries',()=>{
+ const initial=defaultLayout(), moved=moveModule(initial,'pomodoro',3);
+ assert.equal(moved[3],'pomodoro');assert.deepEqual(initial,defaultLayout());
+ assert.deepEqual(moveModule(initial,'pomodoro',-1),initial);
+ assert.deepEqual(moveModule(initial,'formula',1),initial);
+ assert.deepEqual(validateFeatures({}).moduleOrder,initial);
+ assert.throws(()=>validateLayout(['pomodoro']));
+ assert.throws(()=>validateLayout(initial.map(()=> 'pomodoro')));
+ assert.throws(()=>validateLayout([...initial.slice(0,-1),'__proto__']));
+});

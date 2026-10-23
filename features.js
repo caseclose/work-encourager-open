@@ -1,3 +1,4 @@
+import { defaultLayout, validateLayout } from './layout.js';
 import { pomodoroDefaults, validatePomodoro } from './pomodoro.js';
 import { computeSnapshot } from './earn.js';
 import { validateGoals, orderedGoals, GOALS_STORAGE_KEY } from './goals.js';
@@ -7,7 +8,7 @@ export const FEATURES_KEY = 'work-encourager-features-v1';
 export const BASE_KEY = 'work-encourager-settings-v1';
 export const BAR_MODES = ['earned', 'remaining', 'plain', 'countdown', 'progress', 'goal', 'goalTime', 'adaptive', 'pomodoro'];
 export const featureDefaults = () => ({
-  pomodoro: pomodoroDefaults(), dateOverrides: {}, celebrationMode: 'animation', rememberPage: true,
+  moduleOrder: defaultLayout(), pomodoro: pomodoroDefaults(), dateOverrides: {}, celebrationMode: 'animation', rememberPage: true,
   companion: { enabled: false, character: 'cat' }, miniContent: 'income',
   reminders: { enabled: false, break: true, end: true, rest: false, restInterval: 60,
     activeStart: '08:00', activeEnd: '22:30', quietStart: '22:30', quietEnd: '08:00' },
@@ -27,7 +28,7 @@ export function validateFeatures(value = {}) {
     reminders[k] = r[k] ?? defaults.reminders[k];
     if (!clock(reminders[k])) throw new Error('提醒时间格式无效。');
   }
-  return { pomodoro: validatePomodoro(value.pomodoro), dateOverrides: validateDateOverrides(value.dateOverrides || {}),
+  return { moduleOrder: validateLayout(value.moduleOrder), pomodoro: validatePomodoro(value.pomodoro), dateOverrides: validateDateOverrides(value.dateOverrides || {}),
     celebrationMode: choice(value.celebrationMode, ['animation','notification','silent'], 'animation'),
     rememberPage: bool(value.rememberPage, true),
     miniContent: choice(value.miniContent, ['income','countdown','goal','pomodoro'], 'income'),

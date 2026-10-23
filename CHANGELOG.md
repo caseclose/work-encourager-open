@@ -55,3 +55,5 @@
 - 发布包已核对版本 **1.3.0 / Build 5**、双架构、签名、14 个网页资源及 DMG / ZIP 内应用一致性；未进行 Intel 硬件实机运行测试。
 
 [项目官网](https://caseclose.github.io/work-encourager-open/) · [完整变更](https://github.com/caseclose/work-encourager-open/compare/v1.0.0...v1.3.0)
+
+番茄钟支持收起，保留计时和开始／暂停操作。设置内可选择经典倒计时、树苗成长、星光积累；完成专注会累计收获，重置本轮保留累计收获。设置 → 模块布局支持拖动、上移、下移及恢复默认顺序，布局和样式随完整备份保存。

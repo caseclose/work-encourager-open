@@ -1,3 +1,4 @@
+import { setupLayoutEditor, defaultLayout } from './layout.js';
 import { setupCalendar } from './calendar.js';
 import { createBackup, parseBackup, applyBackup } from './features.js';
 
@@ -12,13 +13,16 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   const section = (title, body) => `<section class="settings-section"><h3>${title}</h3><div class="settings-group">${body}</div></section>`;
   root.innerHTML = section('日历与临时班表', '<details class="feature-details"><summary>调休、补班与提前下班 <span>⌄</span></summary><div id="calendar-settings"></div></details>')
     + section('目标达成', row('庆祝方式','只在新目标达成时提醒一次',select('celebration-mode','庆祝方式',[['animation','轻量动画'],['notification','系统通知'],['silent','静默']])) + '<p class="feature-note">通知只显示目标已达成，不包含薪资和金额。</p>')
+    + section('模块布局', '<p class="feature-note">拖动模块或点击上移、下移，主面板即时生效。隐藏的模块也保留顺序。</p><div id="layout-editor"></div><div class="feature-buttons"><button id="layout-reset" type="button">恢复默认顺序</button></div><p id="layout-state" class="feature-note" role="status"></p>')
     + section('番茄钟', row('显示番茄钟','在主面板开始专注、暂停、休息',toggle('pomodoro-visible','显示番茄钟'))
+      + row('视觉样式','让专注带来一点看得见的收获',select('pomodoro-style','番茄钟视觉样式',[['classic','经典倒计时'],['tree','树苗成长'],['stars','星光积累']]))
+      + row('收起番茄钟','保留倒计时与开始、暂停操作',toggle('pomodoro-collapsed','收起番茄钟'))
       + row('专注时长','1–180 分钟', '<input id="pomodoro-focus" type="number" min="1" max="180" aria-label="专注时长（分钟）" />')
       + row('短休息','1–60 分钟', '<input id="pomodoro-short" type="number" min="1" max="60" aria-label="短休息（分钟）" />')
       + row('长休息','1–120 分钟', '<input id="pomodoro-long" type="number" min="1" max="120" aria-label="长休息（分钟）" />')
       + row('长休息间隔','完成多少个番茄后进入长休息（1–12）', '<input id="pomodoro-round-count" type="number" min="1" max="12" aria-label="长休息间隔" />')
       + row('阶段结束通知','遵循提醒中心的允许时间和免打扰时间',toggle('pomodoro-notifications','番茄钟阶段结束通知'))
-      + '<p class="feature-note">更改时长从下一段计时生效；已开始的阶段保持原时长。完成后手动开始下一段，跳过不计入完成数。计时会保存到本机，完整备份包含偏好，不包含正在进行的计时。通知需应用运行，睡眠期间不唤醒电脑。</p>')
+      + '<p class="feature-note">树苗与星光随专注进度变化；完成一段才计入累计收获，跳过不计入，重置本轮保留累计收获。更改时长从下一段计时生效；已开始的阶段保持原时长。完成后手动开始下一段，跳过不计入完成数。计时会保存到本机，完整备份包含偏好，不包含正在进行的计时。通知需应用运行，睡眠期间不唤醒电脑。</p>')
     + section('提醒中心', row('启用系统提醒','首次开启时请求通知权限',toggle('reminder-enabled','启用系统提醒'))
       + row('午休与晚饭','进入休息时段时提醒',toggle('reminder-break','午休与晚饭提醒'))
       + row('下班提醒','到点收工，给生活留点时间',toggle('reminder-end','下班提醒'))
@@ -61,6 +65,10 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
     try { permissionDone('Notification' in window && await Notification.requestPermission() === 'granted'); }
     catch { permissionDone(false); }
   }
+  const layoutEditor=setupLayoutEditor(el('layout-editor'),()=>getFeatures().moduleOrder,order=>update(f=>{f.moduleOrder=order;},true));
+  el('layout-reset').onclick=()=>{update(f=>{f.moduleOrder=defaultLayout();});layoutEditor.refresh();};
+  bind('pomodoro-style',e=>update(f=>{f.pomodoro.style=e.value;}));
+  bind('pomodoro-collapsed',e=>update(f=>{f.pomodoro.collapsed=e.checked;}));
   bind('pomodoro-visible', e=>update(f=>{f.pomodoro.visible=e.checked;}));
   bind('pomodoro-notifications', e=>e.checked?requestPermission('pomodoro'):update(f=>{f.pomodoro.notifications=false;}));
   for(const [id,key] of [['focus','focus'],['short','short'],['long','long'],['round-count','rounds']]) bind(`pomodoro-${id}`,e=>update(f=>{f.pomodoro[key]=Number(e.value);}));
@@ -100,7 +108,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   el('import-cancel').onclick=()=>{pendingImport=null;el('import-preview').hidden=true;el('backup-state').textContent='已取消导入。';};
   el('import-confirm').onclick=()=>{
     if(!pendingImport)return;
-    try { applyBackup(localStorage,pendingImport);onImport(pendingImport);pendingImport=null;el('import-preview').hidden=true;el('backup-state').textContent='已恢复备份。';calendar.refresh();sync(); }
+    try { applyBackup(localStorage,pendingImport);onImport(pendingImport);pendingImport=null;el('import-preview').hidden=true;el('backup-state').textContent='已恢复备份。';calendar.refresh();layoutEditor.refresh();sync(); }
     catch(e){el('backup-state').textContent=e.message;}
   };
   el('check-updates').onclick=()=>{
@@ -125,6 +133,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   };
   function sync() {
     const f=getFeatures();
+    el('pomodoro-style').value=f.pomodoro.style;el('pomodoro-collapsed').checked=f.pomodoro.collapsed;
     el('pomodoro-visible').checked=f.pomodoro.visible;
     el('pomodoro-notifications').checked=f.pomodoro.notifications;
     el('pomodoro-notifications').disabled=Boolean(pendingPermission);
@@ -149,7 +158,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
     }
   }
   sync();nativeAction('nativeState');
-  return {refresh(){sync();calendar.refresh();}};
+  return {refresh(){sync();calendar.refresh();layoutEditor.refresh();}};
 }
 
 export function notifySafely({ title, body }) {

@@ -305,3 +305,11 @@ test('goal tracking chooses the next unfinished target and handles empty or achi
   assert.equal(trackedGoal({ rewards: [], bigGoals: [] }, snapshot()), undefined);
   for (const mode of ['goal', 'goalTime']) assert.equal(barText(mode, snapshot(), { rewards: [], bigGoals: [] }), '暂无目标');
 });
+
+
+test('full backups preserve custom layout, collapsed state and growth style',()=>{
+ const data=bundle();data.features.moduleOrder.reverse();data.features.pomodoro.style='tree';data.features.pomodoro.collapsed=true;
+ const restored=parseBackup(createBackup(data));
+ assert.deepEqual(restored.features.moduleOrder,data.features.moduleOrder);
+ assert.equal(restored.features.pomodoro.style,'tree');assert.equal(restored.features.pomodoro.collapsed,true);
+});
