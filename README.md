@@ -31,9 +31,9 @@
 
 ---
 
-## 1.4.0 更新
+## 1.4.1 更新
 
-新增番茄钟与树苗／星光成长反馈，支持收起、暂停恢复，以及九个模块的自由排序。查看 [完整更新说明](https://github.com/caseclose/work-encourager-open/releases/tag/v1.4.0)。
+新增番茄钟与树苗／星光成长反馈，支持收起、暂停恢复，以及九个模块的自由排序。查看 [完整更新说明](https://github.com/caseclose/work-encourager-open/releases/tag/v1.4.1)。
 
 <img src="./assets/preview-pomodoro-tree.png" width="360" alt="1.4.0 树苗成长番茄钟" />
 
@@ -80,8 +80,8 @@
 
 前往 [**GitHub Releases**](https://github.com/caseclose/work-encourager-open/releases/latest) 下载最新版本的安装包：
 
-- **`WorkEncourager-macOS-universal-v1.4.0.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
-- **`WorkEncourager-macOS-universal-v1.4.0.zip`**：解压后直接双击运行 `上班鼓励器.app`。
+- **`WorkEncourager-macOS-universal-v1.4.1.dmg`**：双击挂载后将 `上班鼓励器.app` 拖入 `Applications` 即可。
+- **`WorkEncourager-macOS-universal-v1.4.1.zip`**：解压后直接双击运行 `上班鼓励器.app`。
 
 > 需要 macOS 13 或更新版本，安装包同时支持 Apple Silicon 与 Intel。此版本采用本地签名，尚未经过 Apple 公证；确认从本仓库下载后，可在「系统设置 → 隐私与安全性」中允许打开。Release 同时提供 SHA256 校验文件。
 
@@ -157,4 +157,8 @@ npm start
 
 主面板可开始、暂停、继续、跳过和重置番茄钟；设置中可调整专注、短休息、长休息和长休息间隔。默认 25 / 5 / 15 分钟，每 4 个番茄长休息。计时保存在本机，阶段结束后手动开始下一段，跳过不计完成。菜单栏和迷你悬浮窗均可选择番茄钟倒计时。阶段通知需开启权限，遵循允许提醒及免打扰时段；退出或睡眠期间不唤醒电脑，恢复运行后检查截止时间。完整备份包含番茄钟偏好，不包含当前计时。
 
-番茄钟支持收起，保留计时和开始／暂停操作。设置内可选择经典倒计时、树苗成长、星光积累；完成专注会累计收获，重置本轮保留累计收获。设置 → 模块布局支持拖动、上移、下移及恢复默认顺序，布局和样式随完整备份保存。
+番茄钟支持收起，保留计时和开始／暂停操作。设置内可选择经典倒计时、树苗成长、星光积累；完成专注会累计收获，重置本轮保留累计收获。设置 → 模块布局支持拖动排序及恢复默认顺序，布局和样式随完整备份保存。
+
+### 1.4.1：排序化繁为简
+
+模块布局以拖动为主，提供悬浮卡片、明确落点和平滑让位，移除重复的上下按钮。松手保存，Esc 取消；键盘可通过 Tab 聚焦手柄、空格选中、方向键移动并确认。

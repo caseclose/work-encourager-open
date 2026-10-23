@@ -52,7 +52,7 @@ export function validateBase(value) {
   return result;
 }
 export function createBackup({ goals, settings, features }, scope = 'full') {
-  const data = { app: 'work-encourager', schema: 1, version: '1.4.0', scope, createdAt: new Date().toISOString(), goals: validateGoals(goals) };
+  const data = { app: 'work-encourager', schema: 1, version: '1.4.1', scope, createdAt: new Date().toISOString(), goals: validateGoals(goals) };
   if (scope === 'full') { data.settings = validateBase(settings); data.features = validateFeatures(features); data.features.dateOverrides = validateDateOverrides(data.features.dateOverrides, data.settings); }
   else if (scope !== 'goals') throw new Error('备份类型无效。');
   return JSON.stringify(data, null, 2);

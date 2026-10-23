@@ -9,5 +9,5 @@
     "start:mac": "bash macos/build-app.sh && open ~/Applications/上班鼓励器.app",
     "release:mac": "bash macos/package-release.sh"
   },
-  "version": "1.4.0"
+  "version": "1.4.1"
 }

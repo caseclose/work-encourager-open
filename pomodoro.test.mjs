@@ -67,3 +67,15 @@ test('module ordering preserves all modules and respects boundaries',()=>{
  assert.throws(()=>validateLayout(initial.map(()=> 'pomodoro')));
  assert.throws(()=>validateLayout([...initial.slice(0,-1),'__proto__']));
 });
+
+import { dropIndex } from './layout.js';
+test('drag target is stable within slots and clamps at both ends',()=>{
+ assert.equal(dropIndex(124,100,48,9),0);
+ assert.equal(dropIndex(147.9,100,48,9),0);
+ assert.equal(dropIndex(148,100,48,9),1);
+ assert.equal(dropIndex(-100,100,48,9),0);
+ assert.equal(dropIndex(2000,100,48,9),8);
+ assert.equal(dropIndex(100,100,0,9),0);
+ assert.equal(dropIndex(NaN,100,48,9),0);
+ const order=defaultLayout();assert.equal(moveModule(order,'pomodoro',dropIndex(300,100,48,9))[4],'pomodoro');
+});

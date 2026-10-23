@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="${1:-v1.4.0}"
+VERSION="${1:-v1.4.1}"
 APP_NAME="上班鼓励器"
 STAGE_DIR="$(mktemp -d)"
 DMG_STAGE="$STAGE_DIR/dmg"
@@ -46,7 +46,7 @@ cat > "$CONTENTS_DIR/Info.plist" <<PLIST
   <key>CFBundleShortVersionString</key>
   <string>${VERSION#v}</string>
   <key>CFBundleVersion</key>
-  <string>8</string>
+  <string>9</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>LSUIElement</key>

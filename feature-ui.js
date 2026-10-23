@@ -13,7 +13,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   const section = (title, body) => `<section class="settings-section"><h3>${title}</h3><div class="settings-group">${body}</div></section>`;
   root.innerHTML = section('日历与临时班表', '<details class="feature-details"><summary>调休、补班与提前下班 <span>⌄</span></summary><div id="calendar-settings"></div></details>')
     + section('目标达成', row('庆祝方式','只在新目标达成时提醒一次',select('celebration-mode','庆祝方式',[['animation','轻量动画'],['notification','系统通知'],['silent','静默']])) + '<p class="feature-note">通知只显示目标已达成，不包含薪资和金额。</p>')
-    + section('模块布局', '<p class="feature-note">拖动模块或点击上移、下移，主面板即时生效。隐藏的模块也保留顺序。</p><div id="layout-editor"></div><div class="feature-buttons"><button id="layout-reset" type="button">恢复默认顺序</button></div><p id="layout-state" class="feature-note" role="status"></p>')
+    + section('模块布局', '<p id="layout-help" class="feature-note">拖动左侧手柄调整顺序，松手保存。</p><div id="layout-editor"></div><div class="feature-buttons"><button id="layout-reset" type="button">恢复默认顺序</button></div><p id="layout-state" class="feature-note" role="status"></p>')
     + section('番茄钟', row('显示番茄钟','在主面板开始专注、暂停、休息',toggle('pomodoro-visible','显示番茄钟'))
       + row('视觉样式','让专注带来一点看得见的收获',select('pomodoro-style','番茄钟视觉样式',[['classic','经典倒计时'],['tree','树苗成长'],['stars','星光积累']]))
       + row('收起番茄钟','保留倒计时与开始、暂停操作',toggle('pomodoro-collapsed','收起番茄钟'))
@@ -43,7 +43,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
       + '<p id="native-state" class="feature-note" role="status"></p>')
     + section('备份与恢复', '<div class="settings-row"><div><strong>导出到本机</strong><p>完整备份含薪资；目标备份仅含目标与封面。</p><div class="feature-buttons"><button id="export-full" type="button">完整备份</button><button id="export-goals" type="button">仅导出目标</button></div></div></div>'
       + '<div class="settings-row"><div><strong>导入备份</strong><p>先检查文件，再确认替换。不会更改系统权限或开机启动设置。</p><div class="feature-buttons"><button id="import-backup" type="button">选择备份文件</button><input id="backup-file" type="file" accept=".json,application/json" hidden /></div><div id="import-preview" hidden><p id="import-description"></p><div class="feature-buttons"><button id="import-confirm" type="button">确认替换</button><button id="import-cancel" type="button">取消</button></div></div><p id="backup-state" role="status"></p></div></div>')
-    + section('更新与版本', row('上班鼓励器 1.4.0','查看 GitHub 最新正式版本','<button id="check-updates" type="button">检查更新</button>') + '<p id="update-state" class="feature-note" role="status"></p><div class="feature-buttons" id="release-link-wrap" hidden><button id="open-release" type="button">打开版本发布页</button></div>');
+    + section('更新与版本', row('上班鼓励器 1.4.1','查看 GitHub 最新正式版本','<button id="check-updates" type="button">检查更新</button>') + '<p id="update-state" class="feature-note" role="status"></p><div class="feature-buttons" id="release-link-wrap" hidden><button id="open-release" type="button">打开版本发布页</button></div>');
   const el = id => document.getElementById(id);
   let nativeState = { miniEnabled:false,miniPinned:true,miniOpacity:1,hotkey:'none',launchAtLogin:false,notifications:'notDetermined' };
   let pendingImport = null, pendingPermission = null, releaseURL = null;

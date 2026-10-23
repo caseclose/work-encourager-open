@@ -42,7 +42,7 @@ test('full backup round-trips salary, schedule, dated overrides and personalized
   const serialized = createBackup(source, 'full');
   const envelope = JSON.parse(serialized);
   assert.equal(envelope.app, 'work-encourager');
-  assert.equal(envelope.version, '1.4.0');
+  assert.equal(envelope.version, '1.4.1');
   assert.ok(Number.isFinite(Date.parse(envelope.createdAt)));
   const parsed = parseBackup(serialized);
   assert.equal(parsed.scope, 'full');

@@ -1170,10 +1170,6 @@ html.is-menubar .settings-schedule .sheet { padding: 14px; margin: 0; border: 0;
 .pomodoro-card[data-status="done"] #pomodoro-visual { filter:drop-shadow(0 0 12px var(--gold)); }
 .pomodoro-card[data-collapsed="true"] { padding:12px 16px; }
 .pomodoro-card[data-collapsed="true"] .pomodoro-primary { margin-top:6px; }
-.layout-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 16px; border-bottom:1px solid var(--line); font-size:13px; }
-.layout-row > span { min-width:0; }
-.layout-row > div { display:flex; gap:6px; flex-shrink:0; }
-#extended-settings .layout-row button { padding:5px 8px; font-size:12px; }
 @media(prefers-reduced-motion:reduce) { .growing-tree,.growth-star { transition:none; } }
 
 /* One compact action row keeps the primary control in a stable position. */
