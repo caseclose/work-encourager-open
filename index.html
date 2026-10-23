@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,580;9..144,680&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20261023-141" />
-    <link rel="stylesheet" href="./features.css?v=141" />
+    <link rel="stylesheet" href="./styles.css?v=20261023-142" />
+    <link rel="stylesheet" href="./features.css?v=142" />
     <link rel="stylesheet" href="./calendar.css?v=130" />
     <link rel="stylesheet" href="./goals-ui.css?v=130" />
   </head>
@@ -69,14 +69,14 @@
       <section class="stage" id="stage" aria-label="主面板模块">
       <section id="pomodoro-card" class="pomodoro-card" aria-label="番茄钟" data-module="pomodoro">
         <div class="pomodoro-heading"><strong id="pomodoro-phase">🍅 专注</strong><span id="pomodoro-compact-time" hidden></span><button id="pomodoro-collapse" type="button" aria-expanded="true" aria-controls="pomodoro-body">收起</button></div>
-        <div class="pomodoro-primary"><span id="pomodoro-rounds"></span><button id="pomodoro-toggle" type="button">开始</button></div>
+        <div class="pomodoro-primary"><span id="pomodoro-rounds"></span></div>
         <div id="pomodoro-body">
         <div id="pomodoro-visual" aria-hidden="true"></div><p id="pomodoro-achievement" class="pomodoro-achievement" role="status"></p>
         <div id="pomodoro-time" class="pomodoro-time" role="timer">25:00</div>
         <progress id="pomodoro-progress" max="1" value="0" aria-label="番茄钟进度"></progress>
         <p id="pomodoro-message" role="status"></p>
-        <div class="pomodoro-actions"><button id="pomodoro-skip" type="button">跳过阶段</button><button id="pomodoro-reset" type="button">重置本轮</button></div>
         </div>
+        <div class="pomodoro-actions"><button id="pomodoro-toggle" type="button">开始</button><button id="pomodoro-skip" type="button">跳过阶段</button><button id="pomodoro-reset" type="button">重置本轮</button></div>
       </section>
 
         <div data-module="income">
@@ -327,6 +327,6 @@
       </div>
     </dialog>
     <div id="celebration-toast" role="status" aria-live="polite" hidden></div>
-    <script type="module" src="./app.js?v=20261023-141"></script>
+    <script type="module" src="./app.js?v=20261023-142"></script>
   </body>
 </html>

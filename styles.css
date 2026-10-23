@@ -1175,3 +1175,23 @@ html.is-menubar .settings-schedule .sheet { padding: 14px; margin: 0; border: 0;
 .layout-row > div { display:flex; gap:6px; flex-shrink:0; }
 #extended-settings .layout-row button { padding:5px 8px; font-size:12px; }
 @media(prefers-reduced-motion:reduce) { .growing-tree,.growth-star { transition:none; } }
+
+/* One compact action row keeps the primary control in a stable position. */
+.pomodoro-heading { gap:8px; }
+.pomodoro-primary { margin-top:4px; }
+.pomodoro-actions { display:flex; flex-wrap:nowrap; align-items:center; gap:6px; margin-top:10px; }
+.pomodoro-actions button { flex:1 1 0; min-width:0; min-height:36px; padding:7px 5px; font-size:12px; line-height:1.3; white-space:nowrap; border-radius:10px; }
+#pomodoro-toggle { color:#23180f; background:var(--accent); border-color:transparent; }
+#pomodoro-reset { background:transparent; color:var(--muted); }
+#pomodoro-message { margin:8px 0 0; font-size:12px; }
+#pomodoro-visual { max-width:210px; margin-top:6px; }
+#pomodoro-visual svg { height:110px; }
+.pomodoro-time { font-size:clamp(2.4rem,8vw,3.2rem); padding:4px; }
+.pomodoro-achievement { margin:6px 0 0; }
+.pomodoro-card[data-collapsed="true"] .pomodoro-actions { margin-top:8px; }
+.pomodoro-card[data-collapsed="true"] #pomodoro-skip,.pomodoro-card[data-collapsed="true"] #pomodoro-reset { display:none; }
+.pomodoro-card[data-collapsed="true"] #pomodoro-toggle { flex:0 0 auto; min-width:88px; padding-inline:16px; }
+.pomodoro-actions button:focus-visible,#pomodoro-collapse:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.pomodoro-actions button:not(:disabled):active { transform:translateY(1px); }
+
+.pomodoro-actions #pomodoro-toggle { flex-grow:1.2; }

@@ -70,8 +70,8 @@ export function setupPomodoroUI(timer, getConfig, setCollapsed) {
     el('pomodoro-time').setAttribute('aria-label',`${phaseNames[s.phase]}剩余 ${formatTimer(s.remaining)}`);
     el('pomodoro-progress').value=s.progress;
     el('pomodoro-rounds').textContent=`本轮已完成 ${s.completed} 个番茄`;
-    el('pomodoro-message').textContent=s.error || (s.status==='done' ? (s.phase==='focus'?'专注完成，休息一下吧。':'休息结束，准备好再出发。') : s.status==='paused'?'已暂停，按自己的节奏来。':'每次只做好眼前这一件事。');
-    el('pomodoro-toggle').textContent=s.status==='running'?'暂停':s.status==='paused'?'继续':s.status==='done'?'开始下一阶段':'开始';
+    el('pomodoro-message').textContent=s.error || (s.status==='done' ? (s.phase==='focus'?'专注完成，休息一下吧。':'休息结束，准备好再出发。') : s.status==='paused'?'已暂停，按自己的节奏来。':s.phase==='focus'?'每次只做好眼前这一件事。':'放松一下，准备好再出发。');
+    el('pomodoro-toggle').textContent=s.status==='running'?'暂停':s.status==='paused'?'继续':s.status==='done'?(s.phase==='focus'?'开始休息':'开始专注'):'开始';
     el('pomodoro-skip').disabled=s.status==='idle';
     return s;
   };

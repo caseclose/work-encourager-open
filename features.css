@@ -37,3 +37,5 @@
 @media(max-width:360px){#extended-settings .settings-row-wrap{align-items:flex-start}.time-pair input{width:92px}.feature-note{padding-inline:12px}.goal-card-visual{height:52px}}
 
 #extended-settings input[type="number"] { width:90px; max-width:100%; color:var(--ink); background:var(--card); border:1px solid var(--line-strong); border-radius:10px; padding:8px; font:inherit; }
+
+#layout-editor + .feature-buttons { margin-top:0; padding:12px 16px 0; }
