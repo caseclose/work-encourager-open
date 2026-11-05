@@ -874,7 +874,7 @@
           <article class="feat"><span class="feat-tag">Your Layout</span><h3>面板按你的顺序来</h3><p>九个模块以拖动排序，悬浮卡片跟随手势，高亮空位标明落点。相邻模块平滑让位，松手保存，Esc 取消。</p></article>
           <article class="feat"><span class="feat-tag">Personal Goals</span><h3>每个目标，都有自己的样子</h3><p>添加、修改或删除目标，为它选择 Emoji、颜色与本地图片封面。置顶、拖拽或上下移动，按你的顺序展示。</p></article>
           <article class="feat"><span class="feat-tag">Celebration</span><h3>点亮目标，轻轻庆祝</h3><p>轻量动画、系统通知或静默，随你选择。每日小目标与每月心愿分别去重，重新打开不会重复庆祝。</p></article>
-          <article class="feat"><span class="feat-tag">Calendar</span><h3>班表也能灵活调整</h3><p>按日期手动标记放假、补班、提前下班与当天休息时段。计薪、倒计时、时间轴随当天安排一起变化。</p></article>
+          <article class="feat"><span class="feat-tag">Calendar</span><h3>班表也能灵活调整</h3><p>工资与月排班合并在同一处设置：选好休息方式与上下班时间，再点日历里的日期即可在班 / 休之间切换，* 表示手动调休；当月计薪工作日与日薪自动重算。</p></article>
           <article class="feat"><span class="feat-tag">Menu Bar</span><h3>菜单栏，九种显示方式</h3><p>收入、剩余金额、下班倒计时、今日进度、目标进度与所需工时，新增番茄钟倒计时，也能随工作状态自动切换。</p></article>
           <article class="feat"><span class="feat-tag">Reminders</span><h3>到点休息，也记得下班</h3><p>午休、晚饭、下班与定时活动提醒集中管理。设置允许提醒时间和跨午夜免打扰，通知不显示薪资金额。</p></article>
           <article class="feat"><span class="feat-tag">Mini Window</span><h3>把小小进度放在手边</h3><p>可拖动的原生迷你悬浮窗，支持置顶和透明度调整。显示收入、下班倒计时、目标进度或番茄钟。</p></article>
@@ -903,9 +903,10 @@
         <div class="split">
           <div class="panel">
             <h3>透明的计薪与折算逻辑</h3>
-            <p>按你设置的班表估算进度，午休、晚饭期间暂停累加。单日临时班表仍按固定日薪折算，短班改变当天计薪速度：</p>
-            <pre><code>每天计薪分钟 = (下班 − 上班) − 午休时长 − 晚饭时长
-每日预计收入 = 月薪 ÷ 每月工作日
+            <p>按你设置的休息方式、日历调休与班表估算进度；午休、晚饭为可选扣时，勾选后暂停累加。工作日不再手工填写，按当月日历自动统计，日薪 = 月薪 ÷ 当月工作日，班内连续线性增长：</p>
+            <pre><code>当月工作日   = 按休息方式（双休 / 单休）与日历里的放假、补班标记自动统计
+每天计薪分钟 = (下班 − 上班) − 午休时长 − 晚饭时长
+每日预计收入 = 月薪 ÷ 当月工作日
 每分钟收入   = 每日预计收入 ÷ 每天计薪分钟
 今天已挣金额 = 每分钟收入 × 今天已计薪分钟（精确到秒）</code></pre><p class="settings-footnote">大件心愿是本月收入的等价进度，并非实际储蓄余额。个人薪资、班表、目标与封面保存在本机；手动检查更新仅请求 GitHub 版本信息。</p>
           </div>

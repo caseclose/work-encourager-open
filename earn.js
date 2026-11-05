@@ -1,4 +1,4 @@
-export function parseClock(value) {
+﻿export function parseClock(value) {
   const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(String(value ?? "").trim());
   if (!match) return null;
   const hours = Number(match[1]);
@@ -8,9 +8,9 @@ export function parseClock(value) {
 }
 
 
-const OVERRIDE_TIME_FIELDS = ["start", "end", "breakStart", "breakEnd", "dinnerStart", "dinnerEnd"];
-const OVERRIDE_BOOLEAN_FIELDS = ["breakEnabled", "dinnerEnabled"];
 export const MAX_DATE_OVERRIDES = 730;
+/** "双休" = Monday–Friday, "单休" = every weekday except the chosen rest day (web getDay numbering). */
+export const REST_MODES = ["双休", "单休"];
 
 export function localDateKey(date = new Date()) {
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) throw new Error("日期无效。");
@@ -25,23 +25,11 @@ export function parseDateKey(value) {
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
 }
 
-function validateShift(input) {
-  const start = parseClock(input.start);
-  const end = parseClock(input.end);
-  if (start == null || end == null) throw new Error("上下班时间还没填完整。");
-  if (end <= start) throw new Error("下班时间要晚于上班时间。");
-  const lunch = readPause(Boolean(input.breakEnabled), input.breakStart, input.breakEnd, "午休", start, end, "break");
-  const dinner = readPause(Boolean(input.dinnerEnabled), input.dinnerStart, input.dinnerEnd, "晚饭", start, end, "dinner");
-  if (!lunch.ok) throw new Error(lunch.error);
-  if (!dinner.ok) throw new Error(dinner.error);
-  if (lunch.start != null && dinner.start != null && lunch.start < dinner.end && dinner.start < lunch.end) {
-    throw new Error("午休和晚饭的时间重叠了。");
-  }
-  if (end - start - lunch.span - dinner.span <= 0) throw new Error("扣掉休息之后，没有剩下的计薪时间。");
-}
 
-// Accept only date-keyed work/off records. Optional shift fields inherit the regular schedule.
-export function validateDateOverrides(value, baseSettings) {
+// Calendar marks are plain work/off records (xindong model). Only the mode is kept; per-day shift
+// fields from older backups are dropped instead of being applied, so the calendar always means
+// "this day works" or "this day rests".
+export function validateDateOverrides(value) {
   if (value === undefined) return {};
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("临时班表需要按日期保存。");
   const entries = Object.entries(value);
@@ -52,39 +40,89 @@ export function validateDateOverrides(value, baseSettings) {
     if (!record || typeof record !== "object" || Array.isArray(record) || !["off", "work"].includes(record.mode)) {
       throw new Error(`${key} 需要选择上班或休息。`);
     }
-    const item = { mode: record.mode };
-    if (record.mode === "work") {
-      for (const field of OVERRIDE_TIME_FIELDS) {
-        if (record[field] === undefined) continue;
-        if (typeof record[field] !== "string" || !/^\d{1,2}:\d{2}$/.test(record[field]) || parseClock(record[field]) == null) throw new Error(`${key} 的时间格式无效。`);
-        const minutes = parseClock(record[field]);
-        item[field] = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
-      }
-      for (const field of OVERRIDE_BOOLEAN_FIELDS) {
-        if (record[field] === undefined) continue;
-        if (typeof record[field] !== "boolean") throw new Error(`${key} 的休息开关格式无效。`);
-        item[field] = record[field];
-      }
-      if (baseSettings || (item.start && item.end)) {
-        try { validateShift({ ...baseSettings, ...item }); }
-        catch (error) { throw new Error(`${key}：${error.message}`); }
-      }
-    }
-    cleaned[key] = item;
+    cleaned[key] = { mode: record.mode };
   }
   return cleaned;
+}
+
+/**
+ * Normalizes the weekly rest model used to derive a month's workdays.
+ * Mirrors the xindong model: "双休" (Mon–Fri) or "单休" (every day except one weekday),
+ * plus per-date calendar overrides. Legacy weekday arrays are migrated so existing
+ * installations and old backups keep working.
+ */
+export function normalizeRestSettings(input = {}) {
+  if (input.rest !== undefined) {
+    if (!REST_MODES.includes(input.rest)) throw new Error("休息方式无效。");
+    if (input.rest === "双休") return { rest: "双休", singleRest: 0 };
+    const singleRest = Number(input.singleRest ?? 0);
+    if (!Number.isInteger(singleRest) || singleRest < 0 || singleRest > 6) throw new Error("单休的休息日无效。");
+    return { rest: "单休", singleRest };
+  }
+
+  const legacy = Array.isArray(input.weekdays)
+    ? [...new Set(input.weekdays.map(Number).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6))]
+    : null;
+  if (legacy && legacy.length === 6) {
+    const missing = [0, 1, 2, 3, 4, 5, 6].find((day) => !legacy.includes(day));
+    return { rest: "单休", singleRest: missing };
+  }
+  return { rest: "双休", singleRest: 0 };
+}
+
+/** Regular weekday rule, ignoring calendar overrides. */
+export function isRegularWorkday(date, settings = {}) {
+  if (settings.rest === "单休") return date.getDay() !== Number(settings.singleRest ?? 0);
+  return date.getDay() >= 1 && date.getDay() <= 5;
+}
+
+/** Effective workday for a date: a calendar override wins over the weekly rule. */
+export function isWorkdayForDate(date, settings = {}) {
+  const override = settings.dateOverrides?.[localDateKey(date)];
+  if (override) return override.mode === "work";
+  return isRegularWorkday(date, settings);
+}
+
+/** Number of payable workdays in a month, after regular rules and calendar overrides. */
+export function workdaysInMonth(year, monthIndex, settings = {}) {
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  let total = 0;
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    if (isWorkdayForDate(new Date(year, monthIndex, day, 12), settings)) total += 1;
+  }
+  return total;
+}
+
+function workdaysBefore(now, settings) {
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  let total = 0;
+  for (let day = 1; day < now.getDate(); day += 1) {
+    if (isWorkdayForDate(new Date(year, month, day, 12), settings)) total += 1;
+  }
+  return total;
 }
 
 export function resolveScheduleForDate(input, date = new Date()) {
   const key = localDateKey(date);
   const override = input.dateOverrides?.[key];
-  const weekdays = Array.isArray(input.weekdays) ? input.weekdays.map(Number) : [];
   return {
     ...input,
-    ...(override?.mode === "work" ? override : {}),
-    isWorkday: override ? override.mode === "work" : weekdays.includes(date.getDay()),
+    isWorkday: override ? override.mode === "work" : isRegularWorkday(date, input),
     overrideMode: override?.mode || null,
   };
+}
+
+/** Flips one calendar day between 班 and 休; a value equal to the weekly rule clears the override. */
+export function toggleDateOverride(overrides, date, settings = {}) {
+  const key = localDateKey(date);
+  const records = { ...(overrides || {}) };
+  const regular = isRegularWorkday(date, settings);
+  const current = records[key] ? records[key].mode === "work" : regular;
+  const next = !current;
+  if (next === regular) delete records[key];
+  else records[key] = { mode: next ? "work" : "off" };
+  return records;
 }
 
 function invalid(error) {
@@ -127,48 +165,26 @@ function buildSegments(shiftStart, shiftEnd, pauses) {
   return segments;
 }
 
-function computeMonthProgress(now, weekdays, workdays, dateOverrides = {}) {
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const todayDate = now.getDate();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  let totalMatching = 0;
-  let pastMatching = 0;
-  for (let day = 1; day <= daysInMonth; day += 1) {
-    const date = new Date(year, month, day, 12);
-    const override = dateOverrides[localDateKey(date)];
-    const isWorkday = override ? override.mode === "work" : weekdays.includes(date.getDay());
-    if (isWorkday) {
-      totalMatching += 1;
-      if (day < todayDate) pastMatching += 1;
-    }
-  }
-  if (totalMatching === 0) return 0;
-  return (pastMatching / totalMatching) * workdays;
-}
-
 export function computeSnapshot(input, now = new Date()) {
   if (!(now instanceof Date) || Number.isNaN(now.getTime())) return invalid("日期无效。");
   let dateOverrides;
   try { dateOverrides = validateDateOverrides(input.dateOverrides, input); }
   catch (error) { return invalid(error.message); }
-  input = resolveScheduleForDate({ ...input, dateOverrides }, now);
+  let rest;
+  try { rest = normalizeRestSettings(input); }
+  catch (error) { return invalid(error.message); }
+  input = resolveScheduleForDate({ ...input, ...rest, dateOverrides }, now);
   const salaryText = String(input.salary ?? "").trim();
   if (!salaryText) {
     return { ok: false, code: "empty", error: "填上月薪，今天挣了多少就会开始跳。" };
   }
 
   const salary = Number(salaryText);
-  const workdays = Number(String(input.workdays ?? "").trim());
   const start = parseClock(input.start);
   const end = parseClock(input.end);
-  const weekdays = Array.isArray(input.weekdays) ? input.weekdays.map(Number) : [];
 
   if (!Number.isFinite(salary) || salary <= 0) {
     return invalid("月薪要填一个大于 0 的数字。");
-  }
-  if (!Number.isFinite(workdays) || workdays <= 0 || workdays > 31) {
-    return invalid("每月工作日要在 0 和 31 之间。");
   }
   if (start == null || end == null) {
     return invalid("上下班时间还没填完整。");
@@ -176,8 +192,12 @@ export function computeSnapshot(input, now = new Date()) {
   if (end <= start) {
     return invalid("下班时间要晚于上班时间。");
   }
-  if (weekdays.length === 0 || weekdays.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) {
-    return invalid("至少选一个上班日。");
+
+  // Workdays are derived from the monthly calendar: weekly rest rule plus every
+  // month-level adjustment (holiday, make-up workday) marked in the calendar.
+  const monthWorkdays = workdaysInMonth(now.getFullYear(), now.getMonth(), input);
+  if (monthWorkdays <= 0) {
+    return invalid("日历里这个月还没有上班日，至少标记一天上班。");
   }
 
   const lunch = readPause(
@@ -219,13 +239,15 @@ export function computeSnapshot(input, now = new Date()) {
   }
 
   const segments = buildSegments(start, end, pauses);
-  const perDay = salary / workdays;
+  // Daily target: monthly salary spread over the days this month actually pays for.
+  const perDay = salary / monthWorkdays;
   const perMinute = perDay / dayMinutes;
   const rates = {
     perMinute,
     perHour: perMinute * 60,
     perSecond: perMinute / 60,
     perDay,
+    workdaysInMonth: monthWorkdays,
     dayMinutes,
     spanMinutes,
     startMinutes: start,
@@ -239,7 +261,7 @@ export function computeSnapshot(input, now = new Date()) {
   };
 
   if (!input.isWorkday) {
-    const pastWorkdays = computeMonthProgress(now, weekdays, workdays, dateOverrides);
+    const pastWorkdays = workdaysBefore(now, input);
     return {
       ok: true,
       phase: "off",
@@ -291,9 +313,9 @@ export function computeSnapshot(input, now = new Date()) {
   }
 
   const progress = worked / dayMinutes;
-  const pastWorkdays = computeMonthProgress(now, weekdays, workdays, dateOverrides);
-  const monthWorkdays = Math.min(workdays, pastWorkdays + progress);
-  const monthEarned = monthWorkdays * perDay;
+  const pastWorkdays = workdaysBefore(now, input);
+  const accruedWorkdays = Math.min(monthWorkdays, pastWorkdays + progress);
+  const monthEarned = accruedWorkdays * perDay;
 
   return {
     ok: true,
@@ -303,7 +325,7 @@ export function computeSnapshot(input, now = new Date()) {
     earned: perMinute * worked,
     progress,
     shiftProgress,
-    monthWorkdays,
+    monthWorkdays: accruedWorkdays,
     monthEarned,
     nextStop,
   };

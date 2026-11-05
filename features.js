@@ -1,8 +1,8 @@
-import { defaultLayout, validateLayout } from './layout.js';
+﻿import { defaultLayout, validateLayout } from './layout.js';
 import { pomodoroDefaults, validatePomodoro } from './pomodoro.js';
 import { computeSnapshot } from './earn.js';
 import { validateGoals, orderedGoals, GOALS_STORAGE_KEY } from './goals.js';
-import { validateDateOverrides, localDateKey } from './earn.js';
+import { normalizeRestSettings, validateDateOverrides, localDateKey } from './earn.js';
 
 export const FEATURES_KEY = 'work-encourager-features-v1';
 export const BASE_KEY = 'work-encourager-settings-v1';
@@ -40,11 +40,13 @@ export function loadFeatures(storage) {
 export function validateBase(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('薪资与班表格式无效。');
   const result = {};
-  for (const k of ['salary','workdays','start','end','breakStart','breakEnd','dinnerStart','dinnerEnd']) result[k] = String(value[k] ?? '');
+  for (const k of ['salary','start','end','breakStart','breakEnd','dinnerStart','dinnerEnd']) result[k] = String(value[k] ?? '');
   if (result.salary !== '' && (!/^\d+(?:\.\d{1,2})?$/.test(result.salary) || +result.salary <= 0 || +result.salary > 1e9)) throw new Error('备份中的月薪无效。');
   for (const k of ['breakEnabled','dinnerEnabled','masked','showStats','showTimeline','showRewards','showBigGoals']) result[k] = bool(value[k], !['breakEnabled','dinnerEnabled','masked'].includes(k));
-  result.weekdays = value.weekdays;
-  if (!Array.isArray(result.weekdays) || result.weekdays.length > 7 || result.weekdays.some(d => !Number.isInteger(d) || d < 0 || d > 6) || new Set(result.weekdays).size !== result.weekdays.length) throw new Error('备份中的工作日无效。');
+  // Workdays are derived from the weekly rest model; legacy weekday arrays are migrated here.
+  const rest = normalizeRestSettings(value);
+  result.rest = rest.rest;
+  result.singleRest = rest.singleRest;
   result.theme = choice(value.theme, ['auto','light','dark'], 'auto');
   result.barMode = choice(value.barMode, BAR_MODES, 'earned');
   const snapshot = computeSnapshot({ ...result, salary: result.salary || '1' }, new Date(2026, 0, 5, 12));

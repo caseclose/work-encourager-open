@@ -7,7 +7,10 @@
     "test": "node --test earn.test.mjs goals.test.mjs calendar.test.mjs celebrations.test.mjs features.test.mjs pomodoro.test.mjs",
     "build:mac": "bash macos/build-app.sh",
     "start:mac": "bash macos/build-app.sh && open ~/Applications/上班鼓励器.app",
-    "release:mac": "bash macos/package-release.sh"
+    "release:mac": "bash macos/package-release.sh",
+    "build:win": "powershell -NoProfile -ExecutionPolicy Bypass -File windows/build.ps1",
+    "start:win": "powershell -NoProfile -ExecutionPolicy Bypass -File windows/build.ps1 -Configuration Debug -Run",
+    "release:win": "powershell -NoProfile -ExecutionPolicy Bypass -File windows/build.ps1 -Zip"
   },
   "version": "1.4.1"
 }

@@ -1,6 +1,6 @@
 import { applyLayout } from './layout.js';
 import { createPomodoro, setupPomodoroUI, formatTimer, phaseNames } from './pomodoro.js';
-import { computeSnapshot } from "./earn.js";
+import { computeSnapshot, normalizeRestSettings } from "./earn.js";
 import { loadGoals, escapeHTML, orderedGoals } from "./goals.js";
 import { setupGoalEditor } from "./goal-editor.js";
 import { setupSettings } from "./settings.js";
@@ -36,7 +36,8 @@ const STORAGE_KEY = "work-encourager-settings-v1";
 
 const defaults = {
   salary: "",
-  workdays: "22",
+  rest: "双休",
+  singleRest: 0,
   start: "09:30",
   end: "18:30",
   breakEnabled: true,
@@ -45,7 +46,6 @@ const defaults = {
   dinnerEnabled: false,
   dinnerStart: "18:00",
   dinnerEnd: "19:00",
-  weekdays: [1, 2, 3, 4, 5],
   barMode: "earned",
   masked: false,
   theme: "auto",
@@ -104,6 +104,8 @@ const statsEl = document.querySelector("#stats");
 const pillEl = document.querySelector("#pill");
 const clockEl = document.querySelector("#clock");
 const messageEl = document.querySelector("#form-message");
+const scheduleSummaryDaysEl = document.querySelector(".schedule-summary-days");
+const scheduleSummaryRateEl = document.querySelector(".schedule-summary-rate");
 const themeBtn = document.querySelector("#theme-btn");
 const themeSunEl = document.querySelector("#theme-sun");
 const themeMoonEl = document.querySelector("#theme-moon");
@@ -111,7 +113,9 @@ const maskBtn = document.querySelector("#mask-btn");
 const eyeOpenEl = document.querySelector("#eye-open");
 const eyeOffEl = document.querySelector("#eye-off");
 const quitBtn = document.querySelector("#quit-btn");
-const dayButtons = [...document.querySelectorAll(".day")];
+const restSelect = document.querySelector("#rest-mode");
+const singleRestLabel = document.querySelector("#single-rest-label");
+const singleRestSelect = document.querySelector("#single-rest");
 
 const urlParams = new URLSearchParams(window.location.search);
 const isMenuBarApp = urlParams.get("menubar") === "1";
@@ -165,22 +169,28 @@ function formatDuration(minutes, rounding = "round") {
 function loadSettings() {
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (!parsed || typeof parsed !== "object") return { ...defaults, weekdays: [...defaults.weekdays] };
-    return {
-      ...defaults,
-      ...parsed,
-      weekdays: Array.isArray(parsed.weekdays)
-        ? parsed.weekdays.map(Number)
-        : [...defaults.weekdays],
-    };
+    if (!parsed || typeof parsed !== "object") return { ...defaults };
+    // Older saves stored a manual workday count and free weekday picks; migrate them.
+    const { rest, singleRest } = normalizeRestSettings(parsed);
+    const settings = { ...defaults, ...parsed, rest, singleRest };
+    delete settings.workdays;
+    delete settings.weekdays;
+    return settings;
   } catch {
-    return { ...defaults, weekdays: [...defaults.weekdays] };
+    return { ...defaults };
   }
+}
+
+function syncRestFields() {
+  if (!restSelect || !singleRestLabel) return;
+  singleRestLabel.hidden = restSelect.value !== "单休";
 }
 
 function fillForm(settings) {
   form.salary.value = settings.salary;
-  form.workdays.value = settings.workdays;
+  restSelect.value = settings.rest === "单休" ? "单休" : "双休";
+  singleRestSelect.value = String(Number.isInteger(settings.singleRest) ? settings.singleRest : 0);
+  syncRestFields();
   form.start.value = settings.start;
   form.end.value = settings.end;
   form.breakEnabled.checked = Boolean(settings.breakEnabled);
@@ -189,9 +199,6 @@ function fillForm(settings) {
   form.dinnerEnabled.checked = Boolean(settings.dinnerEnabled);
   form.dinnerStart.value = settings.dinnerStart;
   form.dinnerEnd.value = settings.dinnerEnd;
-  for (const button of dayButtons) {
-    button.setAttribute("aria-pressed", settings.weekdays.includes(Number(button.dataset.day)) ? "true" : "false");
-  }
   barMode = BAR_MODES.includes(settings.barMode) ? settings.barMode : "earned";
   isMasked = Boolean(settings.masked);
   themeMode = ["light", "dark", "auto"].includes(settings.theme) ? settings.theme : "auto";
@@ -202,7 +209,8 @@ function fillForm(settings) {
 function readForm() {
   return {
     salary: form.salary.value.trim(),
-    workdays: form.workdays.value.trim(),
+    rest: restSelect.value === "单休" ? "单休" : "双休",
+    singleRest: Number(singleRestSelect.value) || 0,
     start: form.start.value,
     end: form.end.value,
     breakEnabled: form.breakEnabled.checked,
@@ -211,9 +219,6 @@ function readForm() {
     dinnerEnabled: form.dinnerEnabled.checked,
     dinnerStart: form.dinnerStart.value,
     dinnerEnd: form.dinnerEnd.value,
-    weekdays: dayButtons
-      .filter((button) => button.getAttribute("aria-pressed") === "true")
-      .map((button) => Number(button.dataset.day)),
     barMode,
     masked: isMasked,
     theme: themeMode,
@@ -525,9 +530,23 @@ function render() {
   document.querySelector("#per-minute").textContent = isMasked ? "****" : formatRate(snapshot.perMinute);
   document.querySelector("#per-hour").textContent = isMasked ? "****" : formatRate(snapshot.perHour);
   document.querySelector("#per-day").textContent = isMasked ? "****" : money.format(snapshot.perDay);
+  const workdaysLabel = snapshot.ok ? `${snapshot.workdaysInMonth} 天` : "当月工作日";
+  if (scheduleSummaryDaysEl && scheduleSummaryRateEl) {
+    if (snapshot.ok) {
+      scheduleSummaryDaysEl.textContent = `本月计薪工作日：${snapshot.workdaysInMonth} 天`;
+      scheduleSummaryRateEl.textContent = isMasked
+        ? " · 日薪 ****"
+        : ` · 日薪 ${money.format(snapshot.perDay)}`;
+    } else {
+      scheduleSummaryDaysEl.textContent = snapshot.code === "empty"
+        ? "本月计薪工作日：填上月薪后按日历自动统计"
+        : "本月计薪工作日：按日历自动统计";
+      scheduleSummaryRateEl.textContent = "";
+    }
+  }
   formulaEl.textContent = isMasked
-    ? `月薪 **** ÷ ${settings.workdays} 天 ÷ ${formatDuration(snapshot.dayMinutes)}${breakText} = 每分钟 ****`
-    : `月薪 ÷ ${settings.workdays} 天 ÷ ${formatDuration(snapshot.dayMinutes)}${breakText} = 每分钟 ${formatRate(snapshot.perMinute)}`;
+    ? `月薪 **** ÷ ${workdaysLabel} ÷ ${formatDuration(snapshot.dayMinutes)}${breakText} = 每分钟 ****`
+    : `月薪 ÷ ${workdaysLabel} ÷ ${formatDuration(snapshot.dayMinutes)}${breakText} = 每分钟 ${formatRate(snapshot.perMinute)}`;
   window.dispatchEvent(new Event("encourager-preferences"));
   postMenuBarStatus(snapshot);
 }
@@ -632,15 +651,9 @@ form.addEventListener("submit", event => event.preventDefault());
 form.addEventListener("input", persist);
 form.addEventListener("change", persist);
 
-for (const button of dayButtons) {
-  button.addEventListener("click", () => {
-    const pressed = button.getAttribute("aria-pressed") === "true";
-    const selected = dayButtons.filter((item) => item.getAttribute("aria-pressed") === "true");
-    if (pressed && selected.length === 1) {
-      messageEl.textContent = "至少留一个上班日。";
-      return;
-    }
-    button.setAttribute("aria-pressed", pressed ? "false" : "true");
+if (restSelect) {
+  restSelect.addEventListener("change", () => {
+    syncRestFields();
     persist();
   });
 }

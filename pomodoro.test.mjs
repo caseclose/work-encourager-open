@@ -1,4 +1,4 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createPomodoro, pomodoroDefaults, validatePomodoro, formatTimer, POMODORO_KEY } from './pomodoro.js';
 import { validateFeatures, createBackup, parseBackup } from './features.js';
@@ -38,7 +38,7 @@ test('old feature preferences migrate; duration and type bounds reject malformed
  assert.deepEqual(validateFeatures({}).pomodoro,pomodoroDefaults());
  for(const c of [{focus:0},{short:61},{long:121},{rounds:1.5},{notifications:1},null])assert.throws(()=>validatePomodoro(c));
  assert.equal(formatTimer(1499999),'25:00');assert.equal(formatTimer(-1),'00:00');
- const settings={salary:'',workdays:'22',start:'09:00',end:'18:00',breakStart:'12:00',breakEnd:'13:00',dinnerStart:'17:00',dinnerEnd:'18:00',weekdays:[1,2,3,4,5]};
+ const settings={salary:'',rest:'双休',singleRest:0,start:'09:00',end:'18:00',breakStart:'12:00',breakEnd:'13:00',dinnerStart:'17:00',dinnerEnd:'18:00'};
  const features=validateFeatures({pomodoro:{focus:40}});
  assert.equal(parseBackup(createBackup({settings,features,goals:defaultGoals()})).features.pomodoro.focus,40);
 });

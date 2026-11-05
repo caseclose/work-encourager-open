@@ -1,25 +1,6 @@
 // Goal preferences are stored separately so salary and schedule settings stay intact.
 export const GOALS_STORAGE_KEY = "work-encourager-goals-v1";
 export const MAX_GOALS = 30;
-export const DEFAULT_REWARDS = [
-  { amount: 17, label: "营养工作餐", unit: "一顿" },
-  { amount: 22, label: "通勤打车", unit: "一趟" },
-  { amount: 25, label: "韩式炸鸡", unit: "一份" },
-  { amount: 30, label: "披萨", unit: "一个" },
-  { amount: 49, label: "有线耳机", unit: "一副" },
-  { amount: 80, label: "自助烤肉", unit: "一位" },
-  { amount: 99, label: "无线鼠标", unit: "一个" },
-  { amount: 125, label: "欢乐牧场自助", unit: "一位" },
-  { amount: 199, label: "磁吸充电宝", unit: "一个" },
-  { amount: 249, label: "智能手环", unit: "一个" },
-  { amount: 268, label: "Steam 3A 大作", unit: "一份" },
-  { amount: 329, label: "骨传导运动耳机", unit: "一副" },
-];
-export const DEFAULT_BIG_GOALS = [
-  { amount: 5999, label: "iPhone", unit: "一台" },
-  { amount: 7999, label: "MacBook Air", unit: "一台" },
-];
-
 export const MAX_GOAL_IMAGE_LENGTH = 180000;
 export const MAX_GOALS_DATA_LENGTH = 2000000;
 const DEFAULT_EMOJI = ["🍱", "🚕", "🍗", "🍕", "🎧", "🥩", "🖱️", "🍽️", "🔋", "⌚", "🎮", "🎧"];
@@ -37,11 +18,10 @@ export function createGoalId() {
   return globalThis.crypto?.randomUUID?.() || `goal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }
 
+// Fresh installs start with no goals: the user adds their own small rewards and big wishes in
+// 设置 → 目标 → 管理目标. Existing saved goals keep working unchanged.
 export function defaultGoals() {
-  return {
-    rewards: DEFAULT_REWARDS.map((item, index) => ({ ...item, id: `default-rewards-${index + 1}`, emoji: DEFAULT_EMOJI[index], color: "#ef9b63", image: "", pinned: false })),
-    bigGoals: DEFAULT_BIG_GOALS.map((item, index) => ({ ...item, id: `default-bigGoals-${index + 1}`, emoji: ["📱", "💻"][index], color: "#ef9b63", image: "", pinned: false })),
-  };
+  return { rewards: [], bigGoals: [] };
 }
 
 function validImageData(image) {
