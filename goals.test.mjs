@@ -8,16 +8,16 @@ const memory = () => {
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1kAAAAASUVORK5CYII=';
 const goal = extra => ({ label: '目标', amount: 20, unit: '一份', ...extra });
 
-test('existing users get independent defaults without changing schedule storage', () => {
+test('new installs start with no seeded goals and leave schedule storage untouched', () => {
   const storage = memory();
   storage.setItem('work-encourager-settings-v1', '{"salary":"12345"}');
   const goals = loadGoals(storage);
-  assert.equal(goals.rewards.length, 12);
-  assert.equal(goals.bigGoals.length, 2);
-  assert.equal(new Set([...goals.rewards, ...goals.bigGoals].map(item => item.id)).size, 14);
-  goals.rewards[0].label = 'changed';
-  assert.notEqual(defaultGoals().rewards[0].label, 'changed');
-  saveGoals(storage, goals);
+  assert.deepEqual(goals, { rewards: [], bigGoals: [] });
+  // defaults are fresh objects, so editing one list never leaks into the next call
+  goals.rewards.push(validateGoal(goal()));
+  assert.deepEqual(defaultGoals(), { rewards: [], bigGoals: [] });
+  assert.equal(loadGoals(memory()).rewards.length, 0);
+  saveGoals(storage, { rewards: [], bigGoals: [] });
   assert.equal(storage.getItem('work-encourager-settings-v1'), '{"salary":"12345"}');
 });
 test('custom labels, fractional amounts, additions and empty lists survive reload', () => {

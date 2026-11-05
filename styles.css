@@ -844,7 +844,22 @@ input:not([type]) {
   user-select: text;
 }
 
+.sheet select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  background: var(--card-strong);
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.sheet label[hidden] {
+  display: none;
+}
+
 input:focus-visible,
+.sheet select:focus-visible,
 .day:focus-visible,
 .pat:focus-visible,
 .fold-btn:focus-visible,
@@ -908,6 +923,18 @@ legend {
   border-color: var(--accent);
   background: linear-gradient(140deg, var(--accent), var(--gold));
   color: #1c140e;
+}
+
+.schedule-summary {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.schedule-summary-days {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 .form-message {
@@ -1139,6 +1166,8 @@ html.is-menubar .meals {
 .settings-schedule[open] > summary span { transform: rotate(180deg); }
 .settings-schedule .sheet { border: 0; border-top: 1px solid var(--line); border-radius: 0; margin: 0; padding: 14px; background: transparent; box-shadow: none; }
 .settings-schedule .sheet-head { cursor: default; }
+.settings-schedule .calendar-sheet { border-top: 1px solid var(--line); }
+.settings-schedule .calendar-sheet .calendar-settings { padding: 14px; }
 .settings-schedule .sheet h2 { font-size: 0.9rem; }
 html.is-menubar .settings-schedule .sheet { padding: 14px; margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .settings-switch, .settings-switch::before { transition: none; } }

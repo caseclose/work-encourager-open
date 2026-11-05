@@ -9,10 +9,10 @@ import { GOALS_STORAGE_KEY, defaultGoals, validateGoals } from './goals.js';
 import { computeSnapshot } from './earn.js';
 
 const base = {
-  salary: '22000', workdays: '22', start: '09:30', end: '18:30',
+  salary: '22000', rest: '双休', singleRest: 0, start: '09:30', end: '18:30',
   breakEnabled: true, breakStart: '12:00', breakEnd: '13:30',
   dinnerEnabled: true, dinnerStart: '17:00', dinnerEnd: '17:30',
-  weekdays: [1, 2, 3, 4, 5], barMode: 'earned', theme: 'auto', masked: false,
+  barMode: 'earned', theme: 'auto', masked: false,
   showStats: true, showTimeline: true, showRewards: true, showBigGoals: true,
 };
 const at = (hour, minute, second = 0, day = 22) => new Date(2026, 9, day, hour, minute, second);
@@ -35,6 +35,10 @@ const seed = () => ({ [GOALS_STORAGE_KEY]: 'old goals', [BASE_KEY]: 'old base', 
 
 test('full backup round-trips salary, schedule, dated overrides and personalized goals', () => {
   const source = bundle();
+  source.goals = validateGoals({
+    rewards: [{ label: '咖啡', amount: 19.9, unit: '一杯' }],
+    bigGoals: [{ label: '手机', amount: 5999, unit: '一台' }],
+  });
   source.features.dateOverrides = { '2026-10-23': { mode: 'off' } };
   source.features.companion = { enabled: true, character: 'sprout' };
   source.goals.rewards[0].label = '新咖啡';
@@ -73,7 +77,7 @@ test('rejects malformed, oversized, foreign, future-schema and incomplete backup
 test('backup validation rejects invalid salary, schedule, working days and typed preference values', () => {
   const valid = JSON.parse(createBackup(bundle()));
   for (const patch of [{ salary: '-1' }, { salary: '1.234' }, { end: '08:00' },
-    { weekdays: [1, 1] }, { weekdays: [7] }, { masked: 'yes' }, { barMode: 'unknown' }]) {
+    { rest: '大小周' }, { rest: '单休', singleRest: 7 }, { masked: 'yes' }, { barMode: 'unknown' }]) {
     assert.throws(() => parseBackup(JSON.stringify({ ...valid, settings: { ...base, ...patch } })));
   }
   for (const features of [{ reminders: 'yes' }, { reminders: [] }, { companion: false },
@@ -81,13 +85,14 @@ test('backup validation rejects invalid salary, schedule, working days and typed
     { rememberPage: 1 }, { miniContent: 'unknown' }]) assert.throws(() => validateFeatures(features));
 });
 
-test('full backup checks inherited date overrides against the imported base schedule', () => {
+test('old backups with per-day shift fields are sanitized to plain work/off marks', () => {
   const value = bundle();
   value.features.dateOverrides = { '2026-10-23': { mode: 'work', end: '11:00' } };
-  assert.throws(() => createBackup(value));
+  const parsed = parseBackup(createBackup(value));
+  assert.deepEqual(parsed.features.dateOverrides, { '2026-10-23': { mode: 'work' } });
   const raw = JSON.parse(createBackup(bundle()));
-  raw.features = value.features;
-  assert.throws(() => parseBackup(JSON.stringify(raw)));
+  raw.features = { ...featureDefaults(), dateOverrides: { '2026-10-23': { mode: 'off', start: '09:00' } } };
+  assert.deepEqual(parseBackup(JSON.stringify(raw)).features.dateOverrides, { '2026-10-23': { mode: 'off' } });
 });
 
 test('feature defaults are independent and corrupt persisted preferences recover safely', () => {
@@ -312,4 +317,16 @@ test('full backups preserve custom layout, collapsed state and growth style',()=
  const restored=parseBackup(createBackup(data));
  assert.deepEqual(restored.features.moduleOrder,data.features.moduleOrder);
  assert.equal(restored.features.pomodoro.style,'tree');assert.equal(restored.features.pomodoro.collapsed,true);
+});
+
+test('旧版备份里的每月工作日与每周上班会迁移为休息方式',()=>{
+ const valid=JSON.parse(createBackup(bundle()));
+ const legacy={...valid,settings:{...valid.settings,workdays:'21.75',weekdays:[1,2,3,4,5]}};
+ delete legacy.settings.rest;delete legacy.settings.singleRest;
+ const parsed=parseBackup(JSON.stringify(legacy));
+ assert.equal(parsed.settings.rest,'双休');assert.equal(parsed.settings.singleRest,0);
+ const single={...valid,settings:{...valid.settings,workdays:'22',weekdays:[1,2,3,4,5,6]}};
+ delete single.settings.rest;delete single.settings.singleRest;
+ const migrated=parseBackup(JSON.stringify(single));
+ assert.equal(migrated.settings.rest,'单休');assert.equal(migrated.settings.singleRest,0);
 });

@@ -262,7 +262,7 @@ export function setupGoalEditor({ getGoals, onSave, isMasked }) {
   document.querySelector("#goal-reset").addEventListener("click", () => {
     draft[category] = defaultGoals()[category];
     renderRows();
-    message.textContent = "已恢复这一类的默认目标，点击保存后生效。";
+    message.textContent = "已恢复默认（这一类目标会清空），点击保存后生效。";
   });
   function close() {
     generation++;

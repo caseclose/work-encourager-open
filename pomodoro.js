@@ -1,6 +1,6 @@
 export const POMODORO_KEY = 'work-encourager-pomodoro-v1';
 export const phaseNames = { focus: '专注', short: '短休息', long: '长休息' };
-export const pomodoroDefaults = () => ({ visible: true, focus: 25, short: 5, long: 15, rounds: 4, notifications: false, collapsed: false, style: 'classic' });
+export const pomodoroDefaults = () => ({ visible: false, focus: 25, short: 5, long: 15, rounds: 4, notifications: false, collapsed: false, style: 'classic' });
 export function validatePomodoro(value = {}) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('番茄钟设置格式无效。');
   const result = { ...pomodoroDefaults(), ...value };

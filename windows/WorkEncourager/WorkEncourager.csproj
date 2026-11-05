@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>WorkEncourager</AssemblyName>
+    <RootNamespace>WorkEncourager</RootNamespace>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationVisualStyles>true</ApplicationVisualStyles>
+    <ApplicationUseCompatibleTextRendering>false</ApplicationUseCompatibleTextRendering>
+    <Version>1.4.1</Version>
+    <FileVersion>1.4.1.0</FileVersion>
+    <AssemblyVersion>1.4.1.0</AssemblyVersion>
+    <InformationalVersion>1.4.1</InformationalVersion>
+    <Product>上班鼓励器</Product>
+    <AssemblyTitle>上班鼓励器</AssemblyTitle>
+    <Description>把每一个工作日的每一分钟，折算成看得见的实时进账与生活小目标</Description>
+    <Company>Work Encourager</Company>
+    <Copyright>© Work Encourager contributors</Copyright>
+    <NeutralLanguage>zh-CN</NeutralLanguage>
+    <SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>embedded</DebugType>
+    <!-- WebView2 also ships a WPF reference; the WinForms host has no WPF at runtime. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3277</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <!-- XML documentation files of the WebView2 package are not needed at runtime. -->
+  <Target Name="RemoveWebView2XmlDocs" AfterTargets="Publish">
+    <ItemGroup>
+      <WebView2XmlDocs Include="$(PublishDir)Microsoft.Web.WebView2.*.xml" />
+    </ItemGroup>
+    <Delete Files="@(WebView2XmlDocs)" />
+  </Target>
+
+  <!-- Tray and window icons are loaded from disk at runtime; make sure they reach the publish folder. -->
+  <Target Name="CopyIconsAfterPublish" AfterTargets="Publish">
+    <Copy SourceFiles="Assets\app.ico;Assets\app-masked.ico"
+          DestinationFolder="$(PublishDir)assets"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <!--
+    The renderer is the repository's web app, unchanged. It is copied next to the
+    executable into web/ and served through a WebView2 virtual host, exactly like the
+    macOS shell serves the same files through a WKURLSchemeHandler.
+  -->
+  <ItemGroup>
+    <None Include="..\..\index.html" Link="web\index.html" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\styles.css" Link="web\styles.css" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\features.css" Link="web\features.css" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\calendar.css" Link="web\calendar.css" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\goals-ui.css" Link="web\goals-ui.css" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\app.js" Link="web\app.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\earn.js" Link="web\earn.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\goals.js" Link="web\goals.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\settings.js" Link="web\settings.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\goal-editor.js" Link="web\goal-editor.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\layout.js" Link="web\layout.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\calendar.js" Link="web\calendar.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\celebrations.js" Link="web\celebrations.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\features.js" Link="web\features.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\feature-ui.js" Link="web\feature-ui.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="..\..\pomodoro.js" Link="web\pomodoro.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="Assets\app.ico" Link="assets\app.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="Assets\app-masked.ico" Link="assets\app-masked.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -11,8 +11,7 @@ export function setupFeatureUI({ getFeatures, setFeatures, getSettings, getGoals
   const toggle = (id, label) => `<input id="${id}" aria-label="${label}" type="checkbox" role="switch" class="settings-switch" />`;
   const select = (id, label, values) => `<select id="${id}" aria-label="${label}">${values.map(([v,l]) => `<option value="${v}">${l}</option>`).join('')}</select>`;
   const section = (title, body) => `<section class="settings-section"><h3>${title}</h3><div class="settings-group">${body}</div></section>`;
-  root.innerHTML = section('日历与临时班表', '<details class="feature-details"><summary>调休、补班与提前下班 <span>⌄</span></summary><div id="calendar-settings"></div></details>')
-    + section('目标达成', row('庆祝方式','只在新目标达成时提醒一次',select('celebration-mode','庆祝方式',[['animation','轻量动画'],['notification','系统通知'],['silent','静默']])) + '<p class="feature-note">通知只显示目标已达成，不包含薪资和金额。</p>')
+  root.innerHTML = section('目标达成', row('庆祝方式','只在新目标达成时提醒一次',select('celebration-mode','庆祝方式',[['animation','轻量动画'],['notification','系统通知'],['silent','静默']])) + '<p class="feature-note">通知只显示目标已达成，不包含薪资和金额。</p>')
     + section('模块布局', '<p id="layout-help" class="feature-note">拖动左侧手柄调整顺序，松手保存。</p><div id="layout-editor"></div><div class="feature-buttons"><button id="layout-reset" type="button">恢复默认顺序</button></div><p id="layout-state" class="feature-note" role="status"></p>')
     + section('番茄钟', row('显示番茄钟','在主面板开始专注、暂停、休息',toggle('pomodoro-visible','显示番茄钟'))
       + row('视觉样式','让专注带来一点看得见的收获',select('pomodoro-style','番茄钟视觉样式',[['classic','经典倒计时'],['tree','树苗成长'],['stars','星光积累']]))

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="上班鼓励器"
+           Manufacturer="Work Encourager"
+           Version="1.4.1"
+           UpgradeCode="7C3D2B21-9E64-4E1A-8B0D-6A2C5F4E9D77"
+           Language="2052"
+           Codepage="65001"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="已安装更新版本的上班鼓励器，请先卸载旧版本。" />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="..\WorkEncourager\Assets\app.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+    <Property Id="ARPCONTACT" Value="Work Encourager" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/caseclose/work-encourager-open" />
+
+    <ui:WixUI Id="WixUI_Minimal" />
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+
+    <Feature Id="Main" Title="上班鼓励器" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="Shortcuts" />
+    </Feature>
+
+    <!-- Installing the code-signing certificate into both trusted stores makes UAC show the
+         verified publisher instead of 未知发布者. certutil runs in the elevated server context. -->
+    <CustomAction Id="InstallTrustedRootCert"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[SystemFolder]certutil.exe&quot; -addstore -f Root &quot;[INSTALLFOLDER]WorkEncourager-signing.cer&quot;"
+                  Execute="immediate"
+                  Impersonate="no"
+                  Return="ignore" />
+    <CustomAction Id="InstallTrustedPublisherCert"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[SystemFolder]certutil.exe&quot; -addstore -f TrustedPublisher &quot;[INSTALLFOLDER]WorkEncourager-signing.cer&quot;"
+                  Execute="immediate"
+                  Impersonate="no"
+                  Return="ignore" />
+    <!-- The app may have registered a highest-privilege logon task; clean it up on uninstall. -->
+    <CustomAction Id="RemoveLogonTask"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[SystemFolder]schtasks.exe&quot; /Delete /TN WorkEncourager /F"
+                  Execute="immediate"
+                  Impersonate="no"
+                  Return="ignore" />
+    <!-- Uninstall also removes the trusted certificate entries the installer injected. -->
+    <CustomAction Id="RemoveTrustedCert"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="&quot;[SystemFolder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -Command &quot;Get-ChildItem Cert:\LocalMachine\Root,Cert:\LocalMachine\TrustedPublisher | Where-Object { $_.Subject -like 'CN=Work Encourager*' } | Remove-Item -Force -ErrorAction SilentlyContinue&quot;"
+                  Execute="immediate"
+                  Impersonate="no"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="InstallTrustedRootCert" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="InstallTrustedPublisherCert" After="InstallTrustedRootCert" Condition="NOT Installed" />
+      <Custom Action="RemoveLogonTask" Before="RemoveFiles" Condition="REMOVE=&quot;ALL&quot;" />
+      <Custom Action="RemoveTrustedCert" Before="RemoveFiles" Condition="REMOVE=&quot;ALL&quot;" />
+    </InstallExecuteSequence>
+  </Package>
+
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="WorkEncourager" />
+    </StandardDirectory>
+  </Fragment>
+
+  <Fragment>
+    <!-- The self-contained portable build is the payload: one exe plus the web/assets folders. -->
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="..\..\dist\WorkEncourager-win-x64-portable\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="Shortcuts">
+      <Component Id="DesktopShortcutComponent" Directory="DesktopFolder" Guid="9F1C2A64-58B7-4C2E-9D31-6E0A7B4C1D22">
+        <Shortcut Id="DesktopShortcut"
+                  Name="上班鼓励器"
+                  Description="把每一分钟折算成看得见的进账"
+                  Target="[INSTALLFOLDER]WorkEncourager.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIcon" />
+        <RegistryValue Root="HKLM" Key="Software\WorkEncourager" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+      <Component Id="StartMenuShortcutComponent" Directory="ProgramMenuFolder" Guid="5B2D8E47-1A63-4F90-8C57-3D9E2F6A0B33">
+        <Shortcut Id="StartMenuShortcut"
+                  Name="上班鼓励器"
+                  Description="把每一分钟折算成看得见的进账"
+                  Target="[INSTALLFOLDER]WorkEncourager.exe"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="AppIcon" />
+        <RegistryValue Root="HKLM" Key="Software\WorkEncourager" Name="StartMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>

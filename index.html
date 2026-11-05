@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="上班鼓励器：按月薪、工作日和上下班时间实时折算今天已经挣了多少，支持网页端与 macOS 顶部菜单栏原生应用。" />
+    <meta name="description" content="上班鼓励器：按月薪、工作日和上下班时间实时折算今天已经挣了多少，支持网页端、macOS 菜单栏与 Windows 托盘原生应用。" />
     <title>上班鼓励器 · Work Encourager</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231d1712'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23f09b63' stroke-width='2'/%3E%3Cpath d='M12.5 11.5L16 16l3.5-4.5M12.5 16h7M12.5 19h7M16 16v5.5' fill='none' stroke='%23f7efe4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,7 +67,7 @@
       </header>
 
       <section class="stage" id="stage" aria-label="主面板模块">
-      <section id="pomodoro-card" class="pomodoro-card" aria-label="番茄钟" data-module="pomodoro">
+      <section id="pomodoro-card" class="pomodoro-card" aria-label="番茄钟" data-module="pomodoro" hidden>
         <div class="pomodoro-heading"><strong id="pomodoro-phase">🍅 专注</strong><span id="pomodoro-compact-time" hidden></span><button id="pomodoro-collapse" type="button" aria-expanded="true" aria-controls="pomodoro-body">收起</button></div>
         <div class="pomodoro-primary"><span id="pomodoro-rounds"></span></div>
         <div id="pomodoro-body">
@@ -210,8 +210,8 @@
           <div class="settings-group"><button type="button" class="settings-row settings-navigation" id="goal-settings-open"><div><strong>管理目标</strong><p>名称、封面、Emoji、颜色、置顶和排序</p></div><span aria-hidden="true">›</span></button></div>
         </section>
         <section class="settings-section" aria-labelledby="schedule-title">
-          <h3 id="schedule-title">班表</h3>
-          <details class="settings-group settings-schedule"><summary class="settings-row settings-navigation"><div><strong>薪资与工作时间</strong><p>修改月薪、工作日和休息时段</p></div><span aria-hidden="true">⌄</span></summary>
+          <h3 id="schedule-title">工资与日历</h3>
+          <details class="settings-group settings-schedule"><summary class="settings-row settings-navigation"><div><strong>薪资、班表与日历</strong><p>月薪、休息方式、上下班时间与调休都在这里设置</p></div><span aria-hidden="true">⌄</span></summary>
             <form class="sheet" id="form">
               <div class="sheet-body" id="sheet-body">
                 <div class="grid">
@@ -220,8 +220,23 @@
                     <input name="salary" id="salary" inputmode="decimal" autocomplete="off" placeholder="请输入你的月薪" />
                   </label>
                   <label>
-                    每月工作日
-                    <input name="workdays" id="workdays" type="number" min="0.5" max="31" step="0.25" />
+                    休息方式
+                    <select name="rest" id="rest-mode">
+                      <option value="双休">双休</option>
+                      <option value="单休">单休</option>
+                    </select>
+                  </label>
+                  <label id="single-rest-label" hidden>
+                    单休的休息日
+                    <select name="singleRest" id="single-rest">
+                      <option value="1">星期一</option>
+                      <option value="2">星期二</option>
+                      <option value="3">星期三</option>
+                      <option value="4">星期四</option>
+                      <option value="5">星期五</option>
+                      <option value="6">星期六</option>
+                      <option value="0">星期日</option>
+                    </select>
                   </label>
                   <label>
                     上班
@@ -232,6 +247,8 @@
                     <input name="end" id="end" type="time" required />
                   </label>
                 </div>
+
+                <p class="schedule-summary" id="schedule-summary" role="status"><span class="schedule-summary-days">本月计薪工作日：按日历自动统计</span><span class="schedule-summary-rate"></span></p>
 
                 <div class="meals">
                   <div class="meal">
@@ -269,22 +286,11 @@
                   </div>
                 </div>
 
-                <fieldset class="days-field">
-                  <legend>每周上班</legend>
-                  <div class="days" id="days">
-                    <button type="button" class="day" data-day="1">一</button>
-                    <button type="button" class="day" data-day="2">二</button>
-                    <button type="button" class="day" data-day="3">三</button>
-                    <button type="button" class="day" data-day="4">四</button>
-                    <button type="button" class="day" data-day="5">五</button>
-                    <button type="button" class="day" data-day="6">六</button>
-                    <button type="button" class="day" data-day="0">日</button>
-                  </div>
-                </fieldset>
 
                 <p class="form-message" id="form-message" role="status"></p>
               </div>
             </form>
+            <div class="calendar-sheet" id="calendar-settings"></div>
           </details>
         </section>
         <div id="extended-settings"></div>
@@ -297,7 +303,7 @@
             <a class="settings-row settings-navigation" href="https://github.com/caseclose/work-encourager-open" target="_blank" rel="noopener noreferrer"><div><strong>GitHub 项目</strong><p>查看源码、使用说明和版本发布</p></div><span aria-hidden="true">↗</span></a>
           </div>
         </section>
-        <p class="settings-note">通用、菜单栏、面板和班表设置即时保存。</p>
+        <p class="settings-note">通用、菜单栏、面板和工资日历设置即时保存。</p>
       </div>
       <div id="goal-settings" class="settings-goals-page" hidden>
       <form id="goal-settings-form" novalidate>
